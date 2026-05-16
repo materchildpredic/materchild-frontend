@@ -64,7 +64,7 @@
                     Hemos enviado un código de seguridad de 6 dígitos a su correo electrónico registrado. Por favor, ingréselo a continuación.
                 </p>
 
-                <form action="patients.html">
+                <form id="verify-form">
                     <label class="form-label fw-semibold text-dark">Código de acceso</label>
                     
                     <div class="code-inputs">
@@ -77,7 +77,7 @@
                         <input type="text" class="code-input" maxlength="1" placeholder="0">
                     </div>
 
-                    <button type="submit" class="btn btn-primary w-100 py-3 mt-2 fw-semibold text-white d-flex justify-content-center align-items-center gap-2" style="background-color: var(--primary); border: none; border-radius: 12px; font-size: 1rem;">
+                    <button type="submit" id="btn-verify" class="btn btn-primary w-100 py-3 mt-2 fw-semibold text-white d-flex justify-content-center align-items-center gap-2" style="background-color: var(--primary); border: none; border-radius: 12px; font-size: 1rem;">
                         Verificar e Ingresar
                         <i class="ri-login-box-line"></i>
                     </button>
@@ -95,7 +95,7 @@
         </div>
         
     </div>
-
+    <script src="js/main.js"></script>
     <script>
         const inputs = document.querySelectorAll('.code-input');
         inputs.forEach((input, index) => {

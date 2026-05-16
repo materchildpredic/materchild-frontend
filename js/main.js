@@ -94,4 +94,74 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
+
+    // ==========================================
+    // 3. LÓGICA PARA VERIFICAR OTP (verify.html)
+    // ==========================================
+    const verifyForm = document.getElementById('verify-form');
+    
+    if (verifyForm) {
+        // Recuperamos el correo que guardamos en la pantalla anterior
+        const correoGuardado = sessionStorage.getItem('correo_medico');
+        
+        // Si alguien intenta entrar directo a verify.html sin poner su correo, lo devolvemos
+        if (!correoGuardado) {
+            window.location.href = 'index.html';
+        }
+
+        verifyForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Recolectar los 6 números de las cajitas
+            const inputs = document.querySelectorAll('.code-input');
+            let codigoIngresado = '';
+            inputs.forEach(input => {
+                codigoIngresado += input.value;
+            });
+
+            // Validar que escribió los 6
+            if (codigoIngresado.length !== 6) {
+                alert("Por favor, ingrese el código completo de 6 dígitos.");
+                return;
+            }
+
+            const btnVerify = document.getElementById('btn-verify');
+            const textoOriginal = btnVerify.innerHTML;
+            btnVerify.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Verificando...';
+            btnVerify.disabled = true;
+
+            try {
+                // Enviar a Python
+                const response = await fetch(`${API_URL}/verificar-otp`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        correo: correoGuardado,
+                        codigo_otp: codigoIngresado
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // ¡Éxito! Guardamos el nombre del doctor para usarlo en el dashboard
+                    sessionStorage.setItem('nombre_medico', data.usuario.nombre_completo);
+                    // Redirigimos al sistema
+                    window.location.href = 'patients.html';
+                } else {
+                    alert(`Error: ${data.error}`);
+                    // Limpiamos las cajitas si se equivoca
+                    inputs.forEach(input => input.value = '');
+                    inputs[0].focus();
+                    btnVerify.innerHTML = textoOriginal;
+                    btnVerify.disabled = false;
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Error de conexión con el servidor.");
+                btnVerify.innerHTML = textoOriginal;
+                btnVerify.disabled = false;
+            }
+        });
+    }
 });
