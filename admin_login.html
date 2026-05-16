@@ -3,18 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Materchild Predic - Login</title>
-    
+    <title>Admin Login - Materchild Predic</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
-    
     <link rel="stylesheet" href="css/styles.css">
 </head>
+
 <body>
     <div class="container-fluid vh-100 p-0 auth-layout">
         <div class="row g-0 h-100">
-            
             <div class="col-lg-6 d-none d-lg-flex flex-column justify-content-center p-5 text-white auth-hero" style="background-color: var(--primary);">
                 <div class="mb-4">
                     <h1 class="display-5 fw-bold mb-3">Plataforma predictiva de Salud Materno Infantil.</h1>
@@ -28,9 +25,7 @@
                     <span class="text-uppercase fw-semibold" style="letter-spacing: 1px;">Diagnósticos Predictivos</span>
                 </div>
             </div>
-
             <div class="col-lg-6 d-flex justify-content-center align-items-center bg-white p-4 auth-content">
-                
                 <div class="card border-0 shadow-lg w-100 auth-card" style="max-width: 450px; border-radius: 24px;">
                     <div class="card-body p-5 d-flex flex-column align-items-center">
                         <div class="text-center mb-4 w-100">
@@ -38,35 +33,37 @@
                                 <img src="assets/logo.png" alt="Materchild Logo" style="width: 100%; height: 100%; object-fit: contain;">
                                
                             </div>
-                            <h2 class="h4 fw-bold mb-1" style="color: var(--on-surface);">Inicio de sesión</h2>
+                            <h2 class="h4 fw-bold mb-1" style="color: var(--on-surface);">Inicie sesión con su usuario administrativo</h2>
                         </div>
-
-                        <form id="login-form" class="w-100 mt-2">
+                        <form id="admin-login-form" class="w-100 mt-2">
                             <div class="mb-4 position-relative">
-                                <label class="form-label fw-semibold" style="color: var(--on-surface);">Ingrese correo electrónico</label>
+                                <label class="form-label fw-semibold" style="color: var(--on-surface);">Usuario</label>
                                 <div class="position-relative">
-                                    <input type="email" id="login-email" class="form-control form-control-lg bg-light" placeholder="correo@institucion.com" required style="padding-left: 45px; border-color: var(--ghost-border); font-size: 1rem;">
+                                    <input type="text" id="admin-username" class="form-control form-control-lg bg-light" placeholder="usuario" required style="padding-left: 45px; border-color: var(--ghost-border); font-size: 1rem;">
                                     <i class="ri-user-line position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
-                                </div>
+                                </div> 
                             </div>
 
-                            <button type="submit" id="btn-login" class="btn btn-primary w-100 py-3 mt-2 fw-semibold d-flex justify-content-center align-items-center gap-2" style="background-color: var(--primary); border: none; border-radius: 12px; font-size: 1rem;">
-                                Solicitar Código de Acceso
+                            <div class="mb-4 position-relative">
+                                <label class="form-label fw-semibold" style="color: var(--on-surface);">Contraseña</label>
+                                <div class="position-relative">
+                                    <input type="password" id="admin-password" class="form-control form-control-lg bg-light" placeholder="•••••" required style="padding-left: 45px; border-color: var(--ghost-border); font-size: 1rem;">
+                                    <i class="ri-lock-password-line position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                                </div>
+                            </div>
+                    
+                            <button type="submit" id="btn-admin-login" class="btn btn-primary w-100 py-3 mt-2 fw-semibold d-flex justify-content-center align-items-center gap-2" style="background-color: var(--primary); border: none; border-radius: 12px; font-size: 1rem;">
+                                Ingresar
                                 <i class="ri-login-box-line"></i>
                             </button>
                         </form>
 
-                        <div class="d-flex align-items-center justify-content-between w-100 mt-5 pt-4 border-top">
-                            <span class="text-muted small">¿Nuevo en el portal?</span>
-                            <a href="register.html" class="btn btn-outline-secondary btn-sm fw-medium" style="border-radius: 8px;">Registrarse</a>
-                        </div>
-
                         <div class="text-center mt-3">
-                            <a href="admin_login.html" class="text-decoration-none small text-muted fw-semibold">
-                                <i class="ri-shield-user-line align-middle me-1"></i> Ingresar como administrador
+                            <a href="index.html" class="text-decoration-none small text-muted fw-semibold">
+                                <i class="ri-shield-user-line align-middle me-1"></i> Volver al portal médico
                             </a>
                         </div>
-                        
+
                         <div class="mt-4 text-center w-100">
                             <p class="small text-muted text-center mt-3 mb-0" style="font-size: 0.75rem;">
                             © 2026 Materchild Predic. Todos los derechos reservados.<br>
@@ -74,7 +71,6 @@
                         </div>
                     </div>
                 </div>
-                
             </div>
         </div>
     </div>
