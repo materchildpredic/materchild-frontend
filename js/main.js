@@ -164,4 +164,107 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
+
+    // ==========================================
+    // 4. LÓGICA LOGIN ADMINISTRADOR (admin_login.html)
+    // ==========================================
+    const adminLoginForm = document.getElementById('admin-login-form');
+    if (adminLoginForm) {
+        adminLoginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const usuario = document.getElementById('admin-username').value;
+            const contrasena = document.getElementById('admin-password').value;
+            const btnAdmin = document.getElementById('btn-admin-login');
+            
+            btnAdmin.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Verificando Administrador...';
+            btnAdmin.disabled = true;
+
+            try {
+                const response = await fetch('http://127.0.0.1:5000/api/auth/admin-login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ usuario, contrasena })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    sessionStorage.setItem('admin_sesion', data.admin.usuario);
+                    window.location.href = 'admin_dashboard.html';
+                } else {
+                    alert(`Error: ${data.error}`);
+                    btnAdmin.innerHTML = 'Ingresar al Panel <i class="ri-arrow-right-line"></i>';
+                    btnAdmin.disabled = false;
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Error de conexión con el servidor backend.");
+                btnAdmin.innerHTML = 'Ingresar al Panel <i class="ri-arrow-right-line"></i>';
+                btnAdmin.disabled = false;
+            }
+        });
+    }
+
+    // ==========================================
+    // 5. LÓGICA SUBIDA DE CSV (admin_dashboard.html)
+    // ==========================================
+    const adminUploadForm = document.getElementById('admin-upload-form');
+    if (adminUploadForm) {
+        // Protección de pantalla: Si no es admin, lo rebota
+        if (!sessionStorage.getItem('admin_sesion')) {
+            window.location.href = 'admin_login.html';
+        }
+
+        adminUploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const fileInput = document.getElementById('csv-file');
+            const btnUpload = document.getElementById('btn-upload-csv');
+            const statusDiv = document.getElementById('upload-status');
+            
+            if (fileInput.files.length === 0) return;
+
+            // FormData es requerido para enviar archivos multimedia/binarios por HTTP
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            btnUpload.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Insertando registros en Neon.tech...';
+            btnUpload.disabled = true;
+            statusDiv.classList.add('d-none');
+
+            try {
+                const response = await fetch('http://127.0.0.1:5000/api/data/upload-dataset', {
+                    method: 'POST',
+                    body: formData // No lleva headers de Content-Type, el navegador lo calcula con FormData
+                });
+
+                const data = await response.json();
+
+                statusDiv.classList.remove('d-none', 'alert-success', 'alert-danger');
+                if (response.ok) {
+                    statusDiv.classList.add('alert-success');
+                    statusDiv.innerHTML = `<strong>¡Éxito!</strong> ${data.mensaje}. Se han inyectado de forma segura <strong>${data.registros_insertados}</strong> registros crudos en Neon.tech.`;
+                    adminUploadForm.reset();
+                } else {
+                    statusDiv.classList.add('alert-danger');
+                    statusDiv.innerHTML = `<strong>Error:</strong> ${data.error}`;
+                }
+            } catch (error) {
+                console.error(error);
+                statusDiv.classList.remove('d-none');
+                statusDiv.classList.add('alert-danger');
+                statusDiv.innerHTML = '<strong>Error crítico:</strong> No se pudo conectar con el servidor backend.';
+            } finally {
+                btnUpload.innerHTML = 'Procesar e Insertar en Base de Datos <i class="ri-database-2-line"></i>';
+                btnUpload.disabled = false;
+            }
+        });
+
+        // Botón cerrar sesión admin
+        document.getElementById('btn-logout-admin')?.addEventListener('click', () => {
+            sessionStorage.removeItem('admin_sesion');
+            window.location.href = 'admin_login.html';
+        });
+    }
 });
