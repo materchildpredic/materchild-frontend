@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Materchild Predic - Ficha Técnica</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    
+    <link rel="stylesheet" href="css/styles.css">
+    
+    <style>
+        /* Mantenemos solo el CSS estrictamente necesario que no existe en Bootstrap */
+        .risk-bg-accent {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, var(--error-container) 0%, rgba(255,218,214,0) 100%);
+            border-bottom-left-radius: 100%;
+            opacity: 0.5;
+            z-index: 0;
+        }
+
+        .metric-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            z-index: 1;
+            position: relative;
+        }
+
+        .insight-note {
+            background-color: var(--surface);
+            border: 1px solid var(--tertiary);
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-top: 16px;
+        }
+
+        /* Gráfico de barras miniatura */
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            gap: 4px;
+            height: 40px;
+            margin-top: 16px;
+        }
+        .bar {
+            flex: 1;
+            background-color: var(--secondary-container);
+            border-radius: 4px 4px 0 0;
+        }
+        .bar.active {
+            background-color: var(--secondary-fixed);
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container-fluid p-0 d-flex vh-100 overflow-hidden" style="background-color: var(--surface);">
+        
+        <aside class="d-none d-md-flex flex-column flex-shrink-0 p-3 shadow-sm" style="width: 260px; background-color: var(--surface-container);">
+            <div class="d-flex align-items-center gap-3 mb-5 mt-3 px-2">
+                <img src="assets/logo.png" alt="Logo" style="height: 32px; filter: grayscale(100%) brightness(50%) sepia(100%) hue-rotate(150deg) saturate(300%);" onerror="this.style.display='none'">
+                <div>
+                    <p class="m-0 fw-medium text-muted" style="font-size: 0.6rem; letter-spacing: 0.05em;">PREDICCIÓN SALUD MATERNO INFANTIL</p>
+                </div>
+            </div>
+
+            <nav class="nav nav-pills flex-column mb-auto gap-2">
+                <a href="patients.html" class="nav-link text-muted d-flex align-items-center gap-2 py-3 px-3 fw-medium" style="border-radius: 12px; transition: 0.2s;">
+                    <i class="ri-user-search-line fs-5"></i>
+                    Consulta de Cliente
+                </a>
+                <a href="#" class="nav-link active d-flex align-items-center gap-2 py-3 px-3 fw-medium" style="background-color: var(--surface-container-lowest); color: var(--primary); box-shadow: var(--shadow-ambient); border-radius: 12px;">
+                    <i class="ri-folder-user-line fs-5"></i>
+                    Expediente Clínico
+                </a>
+            </nav>
+
+            <div class="mt-auto px-2 pb-3">
+                <a href="index.html" class="d-flex align-items-center gap-2 text-decoration-none fw-medium" style="color: var(--error);">
+                    <i class="ri-logout-box-r-line fs-5"></i>
+                    Logout
+                </a>
+            </div>
+        </aside>
+
+        <main class="flex-grow-1 p-4 p-md-5 overflow-y-auto">
+            
+            <header class="d-flex justify-content-between align-items-center mb-5">
+                <div class="d-flex align-items-center gap-3">
+                    <h2 class="m-0 fw-bold d-none d-sm-block" style="color: var(--primary); font-size: 1.125rem;">Materchild Predic</h2>
+                </div>
+                
+                <div class="d-flex align-items-center gap-3">
+                    <div class="text-end d-none d-sm-block">
+                        <p class="m-0 fw-semibold" style="font-size: 0.875rem;">Dr. Alejandro Rios</p>
+                        <p class="m-0 text-muted" style="font-size: 0.75rem;">Investigador Clínico</p>
+                    </div>
+                    <div class="rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 40px; height: 40px; background-color: var(--surface-container-highest);">
+                        <i class="ri-user-line" style="color: var(--primary); font-size: 1.25rem;"></i>
+                    </div>
+                </div>
+            </header>
+
+            <div class="container-fluid p-0" style="max-width: 1100px;">
+                
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end mb-5 gap-3">
+                    <div>
+                        <h1 class="display-5 fw-bold mb-2" style="font-family: var(--font-display);">Ficha Técnica</h1>
+                        <p class="text-muted fs-5 m-0">Expediente Clínico Sintético: #MC-2024-0892</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-light fw-medium border shadow-sm" style="border-radius: 10px;">
+                            <i class="ri-history-line align-middle"></i> Historial
+                        </button>
+                        <button class="btn btn-primary fw-medium shadow-sm" style="background-color: var(--primary); border: none; border-radius: 10px;">
+                            <i class="ri-edit-line align-middle"></i> Editar Datos
+                        </button>
+                    </div>
+                </div>
+
+                <div class="row g-4 mb-4">
+                    
+                    <div class="col-lg-4 d-flex">
+                        <div class="card border-0 shadow-sm rounded-4 w-100 position-relative overflow-hidden p-4">
+                            <div class="risk-bg-accent"></div>
+                            
+                            <div class="metric-title" style="color: var(--error);">
+                                <i class="ri-alert-fill fs-5"></i> NIVEL DE RIESGO
+                            </div>
+                            
+                            <div class="fw-bold my-3" style="font-size: 4rem; color: var(--error); line-height: 1; font-family: var(--font-display); position: relative; z-index: 1;">
+                                Alto
+                            </div>
+                            
+                            <p class="text-muted small mb-4 position-relative" style="line-height: 1.6; z-index: 1;">
+                                Prioridad de intervención inmediata basada en patrones de presión y glucemia detectados.
+                            </p>
+
+                            <div class="mt-auto position-relative" style="z-index: 1;">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="fw-medium text-dark" style="font-size: 0.8rem;">Confianza de IA</span>
+                                    <span class="fw-bold" style="color: var(--tertiary); font-size: 0.8rem;">94%</span>
+                                </div>
+                                <div class="progress" style="height: 6px; background-color: var(--surface-variant);">
+                                    <div class="progress-bar" role="progressbar" style="width: 94%; background-color: var(--tertiary);"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-8">
+                        <div class="row g-4 h-100">
+                            <div class="col-md-6 col-sm-6 d-flex">
+                                <div class="card border-0 shadow-sm rounded-4 w-100 p-4">
+                                    <div class="metric-title"><i class="ri-calendar-event-line fs-5"></i> EDAD</div>
+                                    <div class="metric-value mt-3">25 <span class="metric-unit">años</span></div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-sm-6 d-flex">
+                                <div class="card border-0 shadow-sm rounded-4 w-100 p-4">
+                                    <div class="metric-title"><i class="ri-temp-hot-line fs-5"></i> TEMP. CORPORAL</div>
+                                    <div class="metric-value mt-3">37.0 <span class="metric-unit">°C</span></div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-sm-6 d-flex">
+                                <div class="card border-0 shadow-sm rounded-4 w-100 p-4">
+                                    <div class="metric-title"><i class="ri-women-line fs-5"></i> SEMANAS GESTACIÓN</div>
+                                    <div class="metric-value mt-3">32 <span class="metric-unit">semanas</span></div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-sm-6 d-flex">
+                                <div class="card border-0 shadow-sm rounded-4 w-100 p-4">
+                                    <div class="metric-title"><i class="ri-weight-line fs-5"></i> PESO</div>
+                                    <div class="metric-value mt-3">74.5 <span class="metric-unit">kg</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm rounded-4 mb-4 p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div class="metric-title"><i class="ri-pulse-line fs-5"></i> PRESIÓN ARTERIAL</div>
+                        <span class="badge rounded-pill px-3 py-2" style="background-color: var(--error-container); color: var(--error); font-size: 0.65rem; letter-spacing: 0.5px;">FUERA DE RANGO</span>
+                    </div>
+                    
+                    <div class="row text-center text-md-start">
+                        <div class="col-md-6 border-md-end mb-3 mb-md-0 border-end-0 border-end-md">
+                            <span class="text-muted small fw-medium text-uppercase">Sistólica</span>
+                            <div class="metric-value mt-1">150 <span class="metric-unit">mmHg</span></div>
+                        </div>
+                        <div class="col-md-6 ps-md-5">
+                            <span class="text-muted small fw-medium text-uppercase">Diastólica</span>
+                            <div class="metric-value mt-1">100 <span class="metric-unit">mmHg</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-lg-6 d-flex">
+                        <div class="card border-0 shadow-sm rounded-4 w-100 p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="metric-title"><i class="ri-drop-line fs-5"></i> AZÚCAR EN SANGRE / GLUCEMIA</div>
+                                <div class="insight-spark m-0"></div>
+                            </div>
+                            <div class="metric-value mb-4">110 <span class="metric-unit">mg/dL</span></div>
+                            
+                            <div class="insight-note">
+                                <p class="m-0" style="font-size: 0.85rem; color: var(--tertiary); line-height: 1.5;">
+                                    <strong>Nota del Oráculo:</strong> Los niveles de glucemia muestran una tendencia ascendente en las últimas 24h.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6 d-flex">
+                        <div class="card border-0 shadow-sm rounded-4 w-100 p-4">
+                            <div class="metric-title"><i class="ri-heart-pulse-line fs-5"></i> FRECUENCIA CARDÍACA</div>
+                            <div class="metric-value mt-3 mb-1">70 <span class="metric-unit">BPM</span></div>
+
+                            <div class="bar-chart mt-auto">
+                                <div class="bar" style="height: 30%;"></div>
+                                <div class="bar" style="height: 40%;"></div>
+                                <div class="bar" style="height: 35%;"></div>
+                                <div class="bar" style="height: 60%; background-color: var(--secondary);"></div>
+                                <div class="bar" style="height: 25%;"></div>
+                                <div class="bar" style="height: 20%;"></div>
+                                <div class="bar" style="height: 45%;"></div>
+                                <div class="bar active" style="height: 50%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-wrap gap-3 mt-5 mb-5">
+                    <button class="btn btn-primary px-4 py-3 fw-semibold shadow-sm d-flex align-items-center gap-2" style="background-color: var(--primary); border: none; border-radius: 12px; font-size: 1.1rem;">
+                        <i class="ri-survey-line fs-5"></i> Diagnóstico
+                    </button>
+                    <button class="btn btn-outline-secondary px-4 py-3 fw-semibold shadow-sm d-flex align-items-center gap-2" style="border-radius: 12px; font-size: 1.1rem;">
+                        <i class="ri-mail-send-line fs-5"></i> Enviar al Correo
+                    </button>
+                </div>
+
+                <div class="d-flex flex-column flex-sm-row gap-3 p-4 rounded-4" style="background-color: var(--surface-container-highest);">
+                    <div class="rounded-4 d-flex align-items-center justify-content-center shadow-sm flex-shrink-0" style="width: 48px; height: 48px; background-color: var(--surface-container-lowest);">
+                        <i class="ri-shield-keyhole-line fs-4" style="color: var(--tertiary);"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-bold mb-2" style="font-size: 0.9rem; color: var(--on-surface);">Entorno Seguro de Investigación</h4>
+                        <p class="text-muted small mb-0" style="line-height: 1.6;">Este sistema opera exclusivamente con Sistemas de Datos Sintéticos para Investigación. Toda la información presentada es generada algorítmicamente para imitar distribuciones clínicas reales sin comprometer la privacidad de pacientes reales. Cumple con los protocolos de ética de datos de Materchild.</p>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+</body>
+</html>
