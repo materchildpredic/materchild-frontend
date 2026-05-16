@@ -53,12 +53,11 @@
                         <div class="text-center mb-4 w-100">
                             <h2 class="h4 fw-bold mb-1" style="color: var(--on-surface);">Registro Médico</h2>
                         </div>
-                        <form action="verify.html">
-                            
+                        <form id="register-form">   
                             <div class="mb-3">
                                 <label class="form-label fw-semibold text-dark">Ingrese nombre completo</label>
                                 <div class="position-relative">
-                                    <input type="text" class="form-control form-control-lg bg-light" placeholder="Nombre y apellido" required style="padding-left: 45px; border-color: var(--ghost-border); font-size: 1rem;">
+                                    <input type="text" id="reg-nombre" class="form-control form-control-lg bg-light" placeholder="Nombre y apellido" required style="padding-left: 45px; border-color: var(--ghost-border); font-size: 1rem;">
                                     <i class="ri-user-line position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
                                 </div>
                             </div>
@@ -66,7 +65,7 @@
                             <div class="mb-3">
                                 <label class="form-label fw-semibold text-dark">Ingrese especialidad médica</label>
                                 <div class="position-relative">
-                                    <input type="text" class="form-control form-control-lg bg-light" placeholder="Especialidad" required style="padding-left: 45px; border-color: var(--ghost-border); font-size: 1rem;">
+                                    <input type="text" id="reg-especialidad" class="form-control form-control-lg bg-light" placeholder="Especialidad" required style="padding-left: 45px; border-color: var(--ghost-border); font-size: 1rem;">
                                     <i class="ri-briefcase-4-line position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
                                 </div>
                             </div>
@@ -74,7 +73,7 @@
                             <div class="mb-4">
                                 <label class="form-label fw-semibold text-dark">Ingrese correo institucional</label>
                                 <div class="position-relative">
-                                    <input type="email" class="form-control form-control-lg bg-light" placeholder="Ej: nombre@dominio.com" required style="padding-left: 45px; border-color: var(--ghost-border); font-size: 1rem;">
+                                    <input type="email" id="reg-email" class="form-control form-control-lg bg-light" placeholder="Ej: nombre@dominio.com" required style="padding-left: 45px; border-color: var(--ghost-border); font-size: 1rem;">
                                     <i class="ri-mail-line position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
                                 </div>
                                 <div class="form-text mt-2 small" style="color: var(--primary);">
@@ -83,11 +82,11 @@
                                 </div>
                             </div>
 
-                            <button type="submit" class="btn btn-primary w-100 py-3 mt-2 fw-semibold text-white d-flex justify-content-center align-items-center gap-2" style="background-color: var(--primary); border: none; border-radius: 12px; font-size: 1rem;">
+                            <button type="submit" id="btn-register" class="btn btn-primary w-100 py-3 mt-2 fw-semibold text-white d-flex justify-content-center align-items-center gap-2" style="background-color: var(--primary); border: none; border-radius: 12px; font-size: 1rem;">
                                 Registrarse y Recibir Código
                                 <i class="ri-send-plane-line"></i>
                             </button>
-                            
+    
                             <div class="text-center mt-4">
                                 <a href="index.html" class="text-decoration-none fw-medium" style="color: var(--primary);">¿Ya tienes cuenta? Inicia Sesión</a>
                             </div>
@@ -102,5 +101,6 @@
             </div>
         </div>
     </div>
+    <script src="js/main.js"></script>
 </body>
 </html>

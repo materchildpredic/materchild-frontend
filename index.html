@@ -41,16 +41,16 @@
                             <h2 class="h4 fw-bold mb-1" style="color: var(--on-surface);">Inicio de sesión</h2>
                         </div>
 
-                        <form class="w-100 mt-2" action="verify.html">
+                        <form id="login-form" class="w-100 mt-2">
                             <div class="mb-4 position-relative">
-                                <label class="form-label fw-semibold" style="color: var(--on-surface);">Ingrese correo electrónico o Usuario</label>
+                                <label class="form-label fw-semibold" style="color: var(--on-surface);">Ingrese correo electrónico</label>
                                 <div class="position-relative">
-                                    <input type="text" class="form-control form-control-lg bg-light" placeholder="Correo o usuario" required style="padding-left: 45px; border-color: var(--ghost-border); font-size: 1rem;">
+                                    <input type="email" id="login-email" class="form-control form-control-lg bg-light" placeholder="correo@institucion.com" required style="padding-left: 45px; border-color: var(--ghost-border); font-size: 1rem;">
                                     <i class="ri-user-line position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
                                 </div>
                             </div>
 
-                            <button type="submit" class="btn btn-primary w-100 py-3 mt-2 fw-semibold d-flex justify-content-center align-items-center gap-2" style="background-color: var(--primary); border: none; border-radius: 12px; font-size: 1rem;">
+                            <button type="submit" id="btn-login" class="btn btn-primary w-100 py-3 mt-2 fw-semibold d-flex justify-content-center align-items-center gap-2" style="background-color: var(--primary); border: none; border-radius: 12px; font-size: 1rem;">
                                 Solicitar Código de Acceso
                                 <i class="ri-login-box-line"></i>
                             </button>
@@ -72,5 +72,6 @@
             </div>
         </div>
     </div>
+    <script src="js/main.js"></script>
 </body>
 </html>
