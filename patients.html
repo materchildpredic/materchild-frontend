@@ -58,7 +58,8 @@
                 <div class="text-center mt-4 mb-5">
                     <h1 class="display-6 fw-bold mb-3" style="font-family: var(--font-display);">Consulta Paciente</h1>
                     <p class="text-muted mx-auto" style="font-size: 1rem; max-width: 600px; line-height: 1.6;">
-                        Acceda a la base de datos predictiva de Materchild.
+                        Acceda a la base de datos predictiva de Materchild. Los datos mostrados son <span style="color: var(--primary); font-weight: 500;">sintéticos</span> generados para protocolos de investigación clínica.
+                    </p>
                     </p>
                 </div>
 
@@ -80,10 +81,10 @@
                         <table class="table table-borderless table-hover align-middle mb-0">
                             <thead style="border-bottom: 1px solid var(--ghost-border);">
                                 <tr>
-                                    <th class="text-muted fw-semibold py-3 ps-4" style="font-size: 0.75rem; letter-spacing: 0.05em; width: 35%;">NOMBRE COMPLETO</th>
-                                    <th class="text-muted fw-semibold py-3" style="font-size: 0.75rem; letter-spacing: 0.05em; width: 20%;">ID IDENTIFICACIÓN</th>
-                                    <th class="text-muted fw-semibold py-3" style="font-size: 0.75rem; letter-spacing: 0.05em; width: 35%;">EDAD Y SIGNOS VITALES</th>
-                                    <th class="text-muted fw-semibold py-3 pe-4 text-center" style="font-size: 0.75rem; letter-spacing: 0.05em; width: 10%;">ACCIÓN</th>
+                                    <th class="text-muted fw-semibold py-3 ps-4" style="font-size: 0.75rem; letter-spacing: 0.05em; width: 40%;">NOMBRE COMPLETO</th>
+                                    <th class="text-muted fw-semibold py-3" style="font-size: 0.75rem; letter-spacing: 0.05em; width: 25%;">ID IDENTIFICACIÓN</th>
+                                    <th class="text-muted fw-semibold py-3" style="font-size: 0.75rem; letter-spacing: 0.05em; width: 20%;">EDAD</th>
+                                    <th class="text-muted fw-semibold py-3 pe-4 text-center" style="font-size: 0.75rem; letter-spacing: 0.05em; width: 15%;">ACCIÓN</th>
                                 </tr>
                             </thead>
                             <tbody id="tabla-pacientes">
@@ -97,6 +98,15 @@
                         </table>
                     </div>
                 </div>
+                <div class="d-flex flex-column flex-sm-row gap-3 p-4 rounded-4" style="background-color: var(--surface-container-highest);">
+                    <div class="rounded-4 d-flex align-items-center justify-content-center shadow-sm flex-shrink-0" style="width: 48px; height: 48px; background-color: var(--surface-container-lowest);">
+                        <i class="ri-shield-keyhole-line fs-4" style="color: var(--tertiary);"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-bold mb-2" style="font-size: 0.9rem; color: var(--on-surface);">Entorno Seguro de Investigación</h4>
+                        <p class="text-muted small mb-0" style="line-height: 1.6;">Este sistema opera exclusivamente con Sistemas de Datos Sintéticos para Investigación. Toda la información presentada es generada algorítmicamente para imitar distribuciones clínicas reales sin comprometer la privacidad de pacientes reales. Cumple con los protocolos de ética de datos de Materchild.</p>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
@@ -105,7 +115,7 @@
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow-lg">
                 <div class="modal-header text-white text-center d-block rounded-top-4 py-4" style="background-color: var(--primary);">
-                    <h4 class="modal-title fw-bold"><i class="ri-brain-line me-2"></i>Oráculo IA - Materchild Predic</h4>
+                    <h4 class="modal-title fw-bold"><i class="ri-brain-line me-2"></i>Predicción - Materchild Predic</h4>
                 </div>
                 <div class="modal-body p-5" id="cuerpo-modal-diagnostico">
                     </div>
