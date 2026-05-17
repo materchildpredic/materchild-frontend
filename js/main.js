@@ -173,6 +173,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (response.ok) {
                     // ¡Éxito! Guardamos el nombre del doctor para usarlo en el dashboard
                     sessionStorage.setItem('nombre_medico', data.usuario.nombre_completo);
+                    sessionStorage.setItem('especialidad_medico', data.usuario.especialidad);
                     // Opcional: guardar un token para saber que está logueado
                     sessionStorage.setItem('token_sesion', 'sesion_activa');
                     // Redirigimos al sistema
@@ -356,10 +357,15 @@ document.addEventListener("DOMContentLoaded", () => {
         
         // 1. Mostrar nombre del médico y proteger la ruta
         const nombreMedicoNav = document.getElementById('nombre-medico-nav');
+        const especialidadMedicoNav = document.getElementById('especialidad-medico-nav'); // Capturamos el nuevo elemento
+
         if (nombreMedicoNav) {
             const nombreGuardado = sessionStorage.getItem('nombre_medico');
-            if (nombreGuardado) {
-                nombreMedicoNav.innerText = nombreGuardado;
+            const especialidadGuardada = sessionStorage.getItem('especialidad_medico'); // Traemos la especialidad de memoria
+
+            // Si encontramos la especialidad guardada, la pintamos de inmediato
+            if (especialidadMedicoNav && especialidadGuardada) {
+                especialidadMedicoNav.innerText = especialidadGuardada;
             } else {
                 window.location.href = 'index.html';
             }
@@ -375,19 +381,24 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
 
-        // 3. Cargar las pacientes desde Neon.tech
-        async function cargarPacientes() {
+        // 3. Cargar las pacientes (AHORA RECIBE EL TEXTO A BUSCAR)
+        async function cargarPacientes(textoBusqueda = '') {
             try {
-                const response = await fetch('http://127.0.0.1:5000/api/pacientes');
+                // Si hay texto, armamos la URL con el parámetro 'q'
+                const url = textoBusqueda 
+                    ? `http://127.0.0.1:5000/api/pacientes?q=${encodeURIComponent(textoBusqueda)}` 
+                    : 'http://127.0.0.1:5000/api/pacientes';
+
+                const response = await fetch(url);
                 const pacientes = await response.json();
+                
                 tablaPacientes.innerHTML = ''; 
 
                 if (pacientes.length === 0) {
-                    tablaPacientes.innerHTML = '<tr><td colspan="4" class="text-center py-4">No hay pacientes registradas.</td></tr>';
+                    tablaPacientes.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-muted">No se encontraron pacientes para "${textoBusqueda}".</td></tr>`;
                     return;
                 }
 
-                // Paleta de colores para los círculos de iniciales
                 const colores = ['#eaddff', '#e0e2e6', '#d3e3fd', '#f8d9e0'];
                 const textos = ['var(--tertiary)', 'var(--on-surface-variant)', '#0b57d0', '#9c1c38'];
 
@@ -400,7 +411,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     const row = document.createElement('tr');
                     
-                    // Ajuste: Botón "Seleccionar" que envía el ID en la URL
                     row.innerHTML = `
                         <td class="ps-4 py-3">
                             <div class="d-flex align-items-center gap-3">
@@ -430,13 +440,40 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
+        // 4. CONECTAR LOS BOTONES DEL BUSCADOR
+        const inputBuscar = document.getElementById('buscar-paciente');
+        const btnBuscar = document.getElementById('btn-buscar');
+
+        if (btnBuscar && inputBuscar) {
+            // Al hacer clic en buscar
+            btnBuscar.addEventListener('click', (e) => {
+                e.preventDefault();
+                cargarPacientes(inputBuscar.value.trim());
+            });
+
+            // Al presionar Enter
+            inputBuscar.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    cargarPacientes(inputBuscar.value.trim());
+                }
+            });
+
+            // Si borran todo el texto, recargar la tabla normal
+            inputBuscar.addEventListener('input', () => {
+                if (inputBuscar.value.trim() === '') {
+                    cargarPacientes();
+                }
+            });
+        }
+
+        // 5. Cargar inicial
         cargarPacientes();
     }
 
     // ==========================================
     // 8. LÓGICA DEL DASHBOARD / FICHA TÉCNICA (dashboard.html)
     // ==========================================
-    
     // Verificamos de forma estricta que estemos REALMENTE en dashboard.html
     if (window.location.pathname.includes('dashboard.html')) {
         

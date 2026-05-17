@@ -45,7 +45,7 @@
                     <div class="d-flex align-items-center gap-3">
                         <div class="text-end d-none d-sm-block">
                             <p class="m-0 fw-semibold" style="font-size: 0.875rem;" id="nombre-medico-nav">Médico Activo</p>
-                            <p class="m-0 text-muted" style="font-size: 0.75rem;">Investigador Clínico</p>
+                            <p class="m-0 text-muted" style="font-size: 0.75rem;" id="especialidad-medico-nav">Investigador Clínico</p>
                         </div>
                         <div class="rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 40px; height: 40px; background-color: var(--surface-container-highest);">
                             <i class="ri-user-line" style="color: var(--primary); font-size: 1.25rem;"></i>
@@ -65,8 +65,8 @@
 
                 <div class="d-flex align-items-center bg-white rounded-4 p-2 ps-4 shadow-sm border mb-5" style="border-color: var(--ghost-border) !important;">
                     <i class="ri-search-line text-muted fs-5 me-3"></i>
-                    <input type="text" class="form-control border-0 shadow-none bg-transparent" placeholder="Buscar por nombre o número de identificación..." style="font-size: 1rem;">
-                    <button class="btn btn-primary fw-semibold px-4 py-2 rounded-3" style="background-color: var(--primary); border: none;">BUSCAR</button>
+                    <input type="text" id="buscar-paciente" class="form-control border-0 shadow-none bg-transparent" placeholder="Buscar por nombre o número de identificación..." style="font-size: 1rem;">
+                    <button id="btn-buscar" class="btn btn-primary fw-semibold px-4 py-2 rounded-3" style="background-color: var(--primary); border: none;">BUSCAR</button>
                 </div>
 
                 <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
