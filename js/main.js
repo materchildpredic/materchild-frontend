@@ -375,19 +375,24 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
 
-        // 3. Cargar las pacientes desde Neon.tech
-        async function cargarPacientes() {
+        // 3. Cargar las pacientes (AHORA RECIBE EL TEXTO A BUSCAR)
+        async function cargarPacientes(textoBusqueda = '') {
             try {
-                const response = await fetch('http://127.0.0.1:5000/api/pacientes');
+                // Si hay texto, armamos la URL con el parámetro 'q'
+                const url = textoBusqueda 
+                    ? `http://127.0.0.1:5000/api/pacientes?q=${encodeURIComponent(textoBusqueda)}` 
+                    : 'http://127.0.0.1:5000/api/pacientes';
+
+                const response = await fetch(url);
                 const pacientes = await response.json();
+                
                 tablaPacientes.innerHTML = ''; 
 
                 if (pacientes.length === 0) {
-                    tablaPacientes.innerHTML = '<tr><td colspan="4" class="text-center py-4">No hay pacientes registradas.</td></tr>';
+                    tablaPacientes.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-muted">No se encontraron pacientes para "${textoBusqueda}".</td></tr>`;
                     return;
                 }
 
-                // Paleta de colores para los círculos de iniciales
                 const colores = ['#eaddff', '#e0e2e6', '#d3e3fd', '#f8d9e0'];
                 const textos = ['var(--tertiary)', 'var(--on-surface-variant)', '#0b57d0', '#9c1c38'];
 
@@ -400,7 +405,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     const row = document.createElement('tr');
                     
-                    // Ajuste: Botón "Seleccionar" que envía el ID en la URL
                     row.innerHTML = `
                         <td class="ps-4 py-3">
                             <div class="d-flex align-items-center gap-3">
@@ -430,6 +434,34 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
+        // 4. CONECTAR LOS BOTONES DEL BUSCADOR
+        const inputBuscar = document.getElementById('buscar-paciente');
+        const btnBuscar = document.getElementById('btn-buscar');
+
+        if (btnBuscar && inputBuscar) {
+            // Al hacer clic en buscar
+            btnBuscar.addEventListener('click', (e) => {
+                e.preventDefault();
+                cargarPacientes(inputBuscar.value.trim());
+            });
+
+            // Al presionar Enter
+            inputBuscar.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    cargarPacientes(inputBuscar.value.trim());
+                }
+            });
+
+            // Si borran todo el texto, recargar la tabla normal
+            inputBuscar.addEventListener('input', () => {
+                if (inputBuscar.value.trim() === '') {
+                    cargarPacientes();
+                }
+            });
+        }
+
+        // 5. Cargar inicial
         cargarPacientes();
     }
 
