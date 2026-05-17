@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 if (response.ok) {
                     // Guardamos el correo en el navegador para usarlo en verify.html
-                    sessionStorage.setItem('correo_medico', email);
+                    sessionStorage.setItem('email_medico', email);
                     // Redirigimos a la pantalla de verificación
                     window.location.href = 'verify.html';
                 } else {
@@ -57,35 +57,56 @@ document.addEventListener("DOMContentLoaded", () => {
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            const nombre = document.getElementById('reg-nombre').value;
+            // 1. Capturamos los datos usando los IDs correctos (nombres y apellidos separados)
+            const nombres = document.getElementById('reg-nombres').value;
+            const apellidos = document.getElementById('reg-apellidos').value;
+            const correo_institucional = document.getElementById('reg-email').value;
             const especialidad = document.getElementById('reg-especialidad').value;
-            const email = document.getElementById('reg-email').value;
             const btnRegister = document.getElementById('btn-register');
-
+            
             btnRegister.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Creando perfil...';
             btnRegister.disabled = true;
 
             try {
-                const response = await fetch(`${API_URL}/solicitar-otp`, {
+                // PASO A: Llamamos a la ruta que guarda al médico en la base de datos
+                const responseRegistro = await fetch('http://127.0.0.1:5000/api/auth/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        correo: email,
-                        nombre: nombre,
-                        especialidad: especialidad
-                    })
+                    body: JSON.stringify({ nombres, apellidos, correo_institucional, especialidad })
                 });
 
-                const data = await response.json();
+                const dataRegistro = await responseRegistro.json();
 
-                if (response.ok) {
-                    sessionStorage.setItem('correo_medico', email);
+                // Si el correo ya existe o falta un dato, frenamos aquí y mostramos el error
+                if (!responseRegistro.ok) {
+                    alert(`Error en registro: ${dataRegistro.error}`);
+                    btnRegister.innerHTML = 'Registrarse y Recibir Código <i class="ri-send-plane-line"></i>';
+                    btnRegister.disabled = false;
+                    return; 
+                }
+
+                // PASO B: Si se guardó en la base de datos, solicitamos el código a su correo
+                btnRegister.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Enviando código al correo...';
+                
+                const responseOtp = await fetch('http://127.0.0.1:5000/api/auth/solicitar-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ correo: correo_institucional }) // Solo necesita el correo
+                });
+
+                const dataOtp = await responseOtp.json();
+
+                if (responseOtp.ok) {
+                    // Guardamos el "post-it" en el navegador para que verify.html lo pueda leer
+                    sessionStorage.setItem('email_medico', correo_institucional);
+                    // Redirigimos a la pantalla para que ingrese el código
                     window.location.href = 'verify.html';
                 } else {
-                    alert(`Error: ${data.error}`);
+                    alert(`Error al enviar el código: ${dataOtp.error}`);
                     btnRegister.innerHTML = 'Registrarse y Recibir Código <i class="ri-send-plane-line"></i>';
                     btnRegister.disabled = false;
                 }
+
             } catch (error) {
                 console.error("Error de conexión:", error);
                 alert("No se pudo conectar con el servidor.");
@@ -102,7 +123,7 @@ document.addEventListener("DOMContentLoaded", () => {
     
     if (verifyForm) {
         // Recuperamos el correo que guardamos en la pantalla anterior
-        const correoGuardado = sessionStorage.getItem('correo_medico');
+        const correoGuardado = sessionStorage.getItem('email_medico');
         
         // Si alguien intenta entrar directo a verify.html sin poner su correo, lo devolvemos
         if (!correoGuardado) {
@@ -268,8 +289,9 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-
-    // Lógica del botón de IA (Procesamiento en Lotes Automático)
+    // ==========================================
+    // 6. LÓGICA DEL BOTÓN DE IA (Procesamiento en Lotes Automático)
+    // ==========================================
     const btnProcesar = document.getElementById('btn-procesar-lote');
     if (btnProcesar) {
         btnProcesar.addEventListener('click', async () => {
@@ -320,5 +342,134 @@ document.addEventListener("DOMContentLoaded", () => {
                 btnProcesar.innerHTML = '<i class="ri-play-line me-2"></i> Reanudar Procesamiento';
             }
         });
+    }
+
+    // ==========================================
+    // 7. LÓGICA DE CONSULTA DE PACIENTES (patients.html)
+    // ==========================================
+    const tablaPacientes = document.getElementById('tabla-pacientes');
+    
+    if (tablaPacientes) {
+        
+        // Cargar las pacientes desde Neon.tech
+        async function cargarPacientes() {
+            try {
+                const response = await fetch('http://127.0.0.1:5000/api/pacientes');
+                const pacientes = await response.json();
+                tablaPacientes.innerHTML = ''; 
+
+                if (pacientes.length === 0) {
+                    tablaPacientes.innerHTML = '<tr><td colspan="4" class="text-center py-4">No hay pacientes registradas.</td></tr>';
+                    return;
+                }
+
+                // Paleta de colores para los círculos de iniciales
+                const colores = ['#eaddff', '#e0e2e6', '#d3e3fd', '#f8d9e0'];
+                const textos = ['var(--tertiary)', 'var(--on-surface-variant)', '#0b57d0', '#9c1c38'];
+
+                pacientes.forEach((p, index) => {
+                    // Extraer las iniciales del nombre (Ej: Elena Martínez -> EM)
+                    const palabras = p.nombres_completos.split(' ');
+                    const iniciales = (palabras[0][0] + (palabras[1] ? palabras[1][0] : '')).toUpperCase();
+                    
+                    // Elegir color intercalado
+                    const bg = colores[index % colores.length];
+                    const color = textos[index % textos.length];
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="ps-4 py-3">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="rounded-3 d-flex align-items-center justify-content-center fw-bold shadow-sm" 
+                                     style="width: 36px; height: 36px; background-color: ${bg}; color: ${color}; font-size: 0.8rem;">
+                                    ${iniciales}
+                                </div>
+                                <span class="fw-semibold text-dark">${p.nombres_completos}</span>
+                            </div>
+                        </td>
+                        <td class="text-muted py-3">${p.cedula}</td>
+                        <td class="py-3">
+                            <span class="badge bg-light text-dark border me-1">${p.edad} años</span>
+                            <span class="badge bg-light text-dark border me-1"><i class="ri-heart-pulse-line text-danger"></i> ${p.signos_vitales.presion}</span>
+                            <span class="badge bg-light text-dark border"><i class="ri-drop-fill text-info"></i> ${p.signos_vitales.glucosa}</span>
+                        </td>
+                        <td class="pe-4 text-center py-3">
+                            <button class="btn btn-sm text-decoration-none fw-bold btn-analizar" 
+                                    style="color: var(--primary); font-size: 0.875rem;"
+                                    data-nombre="${p.nombres_completos}"
+                                    data-datos='${JSON.stringify(p.signos_vitales)}'>
+                                Analizar <i class="ri-magic-line"></i>
+                            </button>
+                        </td>
+                    `;
+                    tablaPacientes.appendChild(row);
+                });
+
+                activarBotonesIA();
+
+            } catch (error) {
+                console.error("Error al cargar pacientes:", error);
+                tablaPacientes.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-danger">Error de conexión.</td></tr>';
+            }
+        }
+
+        // ==========================================
+        // 8. EL PATRÓN FACADE (Consumir la IA)
+        // ==========================================
+        function activarBotonesIA() {
+            const modalDiagnostico = new bootstrap.Modal(document.getElementById('modalDiagnostico'));
+            const cuerpoModal = document.getElementById('cuerpo-modal-diagnostico');
+            
+            document.querySelectorAll('.btn-analizar').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const nombre = e.currentTarget.getAttribute('data-nombre');
+                    const datosVitales = e.currentTarget.getAttribute('data-datos');
+                    
+                    // Mostramos el modal de carga
+                    cuerpoModal.innerHTML = `
+                        <div class="text-center py-4">
+                            <div class="spinner-border mb-3" style="color: var(--primary); width: 3rem; height: 3rem;" role="status"></div>
+                            <h5 class="fw-bold text-dark">El Oráculo está analizando...</h5>
+                            <p class="text-muted small">Procesando los signos vitales de ${nombre} usando Gemini 1.5 Pro</p>
+                        </div>
+                    `;
+                    modalDiagnostico.show();
+
+                    // Llamamos a nuestro Facade en el backend
+                    try {
+                        const response = await fetch('http://127.0.0.1:5000/api/predecir', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ signos_vitales: JSON.parse(datosVitales) })
+                        });
+
+                        const diagnostico = await response.json();
+
+                        // Pintamos el resultado de la IA
+                        if (response.ok) {
+                            cuerpoModal.innerHTML = `
+                                <h5 class="fw-bold" style="color: var(--error);"><i class="ri-alert-fill"></i> Posible Complicación:</h5>
+                                <p class="fs-5">${diagnostico.enfermedad_predicha}</p>
+                                
+                                <h6 class="fw-bold mt-4" style="color: var(--primary);">Justificación Clínica:</h6>
+                                <p class="text-muted">${diagnostico.justificacion}</p>
+                                
+                                <div class="p-3 mt-4 rounded-3" style="background-color: #eaddff; border-left: 4px solid var(--tertiary);">
+                                    <h6 class="fw-bold m-0 mb-2" style="color: var(--tertiary);">Recomendación:</h6>
+                                    <p class="m-0 text-dark small">${diagnostico.recomendacion_medica}</p>
+                                </div>
+                            `;
+                        } else {
+                            cuerpoModal.innerHTML = `<div class="alert alert-danger">Error del Oráculo: ${diagnostico.error}</div>`;
+                        }
+                    } catch (error) {
+                        cuerpoModal.innerHTML = `<div class="alert alert-danger">Error de conexión con el servidor.</div>`;
+                    }
+                });
+            });
+        }
+
+        // Ejecutar al cargar la página
+        cargarPacientes();
     }
 });
