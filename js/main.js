@@ -173,6 +173,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (response.ok) {
                     // ¡Éxito! Guardamos el nombre del doctor para usarlo en el dashboard
                     sessionStorage.setItem('nombre_medico', data.usuario.nombre_completo);
+                    sessionStorage.setItem('especialidad_medico', data.usuario.especialidad);
                     // Opcional: guardar un token para saber que está logueado
                     sessionStorage.setItem('token_sesion', 'sesion_activa');
                     // Redirigimos al sistema
@@ -356,10 +357,15 @@ document.addEventListener("DOMContentLoaded", () => {
         
         // 1. Mostrar nombre del médico y proteger la ruta
         const nombreMedicoNav = document.getElementById('nombre-medico-nav');
+        const especialidadMedicoNav = document.getElementById('especialidad-medico-nav'); // Capturamos el nuevo elemento
+
         if (nombreMedicoNav) {
             const nombreGuardado = sessionStorage.getItem('nombre_medico');
-            if (nombreGuardado) {
-                nombreMedicoNav.innerText = nombreGuardado;
+            const especialidadGuardada = sessionStorage.getItem('especialidad_medico'); // Traemos la especialidad de memoria
+
+            // Si encontramos la especialidad guardada, la pintamos de inmediato
+            if (especialidadMedicoNav && especialidadGuardada) {
+                especialidadMedicoNav.innerText = especialidadGuardada;
             } else {
                 window.location.href = 'index.html';
             }
@@ -468,7 +474,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================
     // 8. LÓGICA DEL DASHBOARD / FICHA TÉCNICA (dashboard.html)
     // ==========================================
-    
     // Verificamos de forma estricta que estemos REALMENTE en dashboard.html
     if (window.location.pathname.includes('dashboard.html')) {
         
