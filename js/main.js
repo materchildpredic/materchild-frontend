@@ -267,4 +267,58 @@ document.addEventListener("DOMContentLoaded", () => {
             window.location.href = 'admin_login.html';
         });
     }
+
+
+    // Lógica del botón de IA (Procesamiento en Lotes Automático)
+    const btnProcesar = document.getElementById('btn-procesar-lote');
+    if (btnProcesar) {
+        btnProcesar.addEventListener('click', async () => {
+            const statusDiv = document.getElementById('ai-status');
+                
+            btnProcesar.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Procesamiento Automático Iniciado...';
+            btnProcesar.disabled = true;
+                
+            let restantes = 1; // Inicializamos en 1 para entrar al ciclo
+            let tamanoLote = 50; // Procesaremos de a 50 pacientes por petición
+
+            try {
+                while (restantes > 0) {
+                    statusDiv.innerHTML = `<span class="text-primary">Llamando al Oráculo (Gemini)... Estructurando un lote de ${tamanoLote} pacientes. Por favor espera...</span>`;
+                        
+                    const response = await fetch('http://127.0.0.1:5000/api/data/procesar-lote', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ lote: tamanoLote })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        restantes = data.restantes;
+                            
+                        // Si ya no quedan registros, avisamos y rompemos el ciclo
+                        if (restantes === 0) {
+                            statusDiv.innerHTML = `<span class="text-success fw-bold">✨ ¡Proceso completado! Todos los datos crudos fueron convertidos a pacientes reales.</span>`;
+                            btnProcesar.innerHTML = '<i class="ri-check-double-line me-2"></i> Base de Datos Lista';
+                            break;
+                        } else {
+                            // Mostramos el progreso y el ciclo vuelve a empezar
+                            statusDiv.innerHTML = `<span class="text-success">✔ Lote estructurado con éxito.</span><br>Pacientes restantes en cola: <strong>${restantes}</strong>... procesando el siguiente lote...`;
+                        }
+                    } else {
+                        // Si la IA falla o se satura, nos detenemos para no hacer daño
+                    statusDiv.innerHTML = `<span class="text-danger">❌ El ciclo se detuvo por un error: ${data.error}</span>`;
+                    btnProcesar.disabled = false;
+                    btnProcesar.innerHTML = '<i class="ri-play-line me-2"></i> Reanudar Procesamiento';
+                    break; 
+                    }
+                }
+            } catch (error) {
+                console.error("Error en el ciclo:", error);
+                statusDiv.innerHTML = '<span class="text-danger">❌ Error crítico de red. El proceso se detuvo.</span>';
+                btnProcesar.disabled = false;
+                btnProcesar.innerHTML = '<i class="ri-play-line me-2"></i> Reanudar Procesamiento';
+            }
+        });
+    }
 });
