@@ -5,7 +5,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // Capturamos los formularios
     const loginForm = document.getElementById('login-form');
     const registerForm = document.getElementById('register-form');
-
+    const verifyForm = document.getElementById('verify-form');
+    const adminLoginForm = document.getElementById('admin-login-form');
+    const adminUploadForm = document.getElementById('admin-upload-form');
+    const btnProcesar = document.getElementById('btn-procesar-lote');
+    const tablaPacientes = document.getElementById('tabla-pacientes');
+    const btnResend = document.getElementById('btn-resend');
+    
     // ==========================================
     // 1. LÓGICA PARA INICIO DE SESIÓN (index.html)
     // ==========================================
@@ -119,8 +125,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================
     // 3. LÓGICA PARA VERIFICAR OTP (verify.html)
     // ==========================================
-    const verifyForm = document.getElementById('verify-form');
-    
     if (verifyForm) {
         // Recuperamos el correo que guardamos en la pantalla anterior
         const correoGuardado = sessionStorage.getItem('email_medico');
@@ -189,7 +193,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================
     // 4. LÓGICA LOGIN ADMINISTRADOR (admin_login.html)
     // ==========================================
-    const adminLoginForm = document.getElementById('admin-login-form');
     if (adminLoginForm) {
         adminLoginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -230,7 +233,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================
     // 5. LÓGICA SUBIDA DE CSV (admin_dashboard.html)
     // ==========================================
-    const adminUploadForm = document.getElementById('admin-upload-form');
     if (adminUploadForm) {
         // Protección de pantalla: Si no es admin, lo rebota
         if (!sessionStorage.getItem('admin_sesion')) {
@@ -292,7 +294,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================
     // 6. LÓGICA DEL BOTÓN DE IA (Procesamiento en Lotes Automático)
     // ==========================================
-    const btnProcesar = document.getElementById('btn-procesar-lote');
     if (btnProcesar) {
         btnProcesar.addEventListener('click', async () => {
             const statusDiv = document.getElementById('ai-status');
@@ -346,9 +347,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // ==========================================
     // 7. LÓGICA DE CONSULTA DE PACIENTES (patients.html)
-    // ==========================================
-    const tablaPacientes = document.getElementById('tabla-pacientes');
-    
+    // ==========================================   
     if (tablaPacientes) {
         
         // Cargar las pacientes desde Neon.tech
@@ -471,5 +470,64 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Ejecutar al cargar la página
         cargarPacientes();
+    }
+
+    // ==========================================
+    // 9. LÓGICA PARA REENVIAR CÓDIGO (verify.html)
+    // ==========================================
+    if (btnResend) {
+        btnResend.addEventListener('click', async (e) => {
+            e.preventDefault();
+            
+            // Sacamos el correo que guardamos previamente en la sesión
+            const correo = sessionStorage.getItem('email_medico');
+            
+            if (!correo) {
+                alert("No se encontró el correo. Por favor, vuelva a registrarse.");
+                window.location.href = 'register.html';
+                return;
+            }
+
+            // Cambiamos el texto para que el usuario sepa que está cargando
+            const textoOriginal = btnResend.innerHTML;
+            btnResend.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Reenviando...';
+            btnResend.style.pointerEvents = 'none'; // Desactiva el botón temporalmente
+
+            try {
+                // Volvemos a llamar a la ruta que genera y envía el OTP
+                const response = await fetch('http://127.0.0.1:5000/api/auth/solicitar-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ correo: correo })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert("¡Un nuevo código ha sido enviado a tu correo!");
+                    
+                    // 🆕 MAGIA UX: Limpiamos las cajitas del OTP
+                    const inputsOTP = document.querySelectorAll('input[type="text"], input[type="number"]');
+                    inputsOTP.forEach(input => {
+                        input.value = ''; // Vaciamos el contenido
+                    });
+                    
+                    // 🆕 Ponemos el cursor parpadeando en la primera cajita
+                    if (inputsOTP.length > 0) {
+                        inputsOTP[0].focus();
+                    }
+                    
+                } else {
+                    alert(`Error: ${data.error}`);
+                }
+            } catch (error) {
+                console.error("Error al reenviar:", error);
+                alert("Error de conexión al intentar reenviar el código.");
+            } finally {
+                // Restauramos el botón
+                btnResend.innerHTML = textoOriginal;
+                btnResend.style.pointerEvents = 'auto';
+            }
+        });
     }
 });
