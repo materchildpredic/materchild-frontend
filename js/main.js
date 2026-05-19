@@ -10,7 +10,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const adminUploadForm = document.getElementById('admin-upload-form');
     const btnProcesar = document.getElementById('btn-procesar-lote');
     const tablaPacientes = document.getElementById('tabla-pacientes');
+    const cuerpoModal = document.getElementById('cuerpo-modal-diagnostico');
     const btnResend = document.getElementById('btn-resend');
+
     
     // ==========================================
     // 1. LÓGICA PARA INICIO DE SESIÓN (index.html)
@@ -171,6 +173,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (response.ok) {
                     // ¡Éxito! Guardamos el nombre del doctor para usarlo en el dashboard
                     sessionStorage.setItem('nombre_medico', data.usuario.nombre_completo);
+                    sessionStorage.setItem('especialidad_medico', data.usuario.especialidad);
+                    // Opcional: guardar un token para saber que está logueado
+                    sessionStorage.setItem('token_sesion', 'sesion_activa');
                     // Redirigimos al sistema
                     window.location.href = 'patients.html';
                 } else {
@@ -350,32 +355,62 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================   
     if (tablaPacientes) {
         
-        // Cargar las pacientes desde Neon.tech
-        async function cargarPacientes() {
+        // 1. Mostrar nombre del médico y proteger la ruta
+        const nombreMedicoNav = document.getElementById('nombre-medico-nav');
+        const especialidadMedicoNav = document.getElementById('especialidad-medico-nav'); // Capturamos el nuevo elemento
+
+        if (nombreMedicoNav) {
+            const nombreGuardado = sessionStorage.getItem('nombre_medico');
+            const especialidadGuardada = sessionStorage.getItem('especialidad_medico'); // Traemos la especialidad de memoria
+
+            // Si encontramos la especialidad guardada, la pintamos de inmediato
+            if (especialidadMedicoNav && especialidadGuardada) {
+                especialidadMedicoNav.innerText = especialidadGuardada;
+            } else {
+                window.location.href = 'index.html';
+            }
+        }
+
+        // 2. Habilitar el botón de Cerrar Sesión
+        const btnLogout = document.getElementById('btn-logout-medico');
+        if (btnLogout) {
+            btnLogout.addEventListener('click', (e) => {
+                e.preventDefault();
+                sessionStorage.clear();
+                window.location.href = 'index.html';
+            });
+        }
+
+        // 3. Cargar las pacientes (AHORA RECIBE EL TEXTO A BUSCAR)
+        async function cargarPacientes(textoBusqueda = '') {
             try {
-                const response = await fetch('http://127.0.0.1:5000/api/pacientes');
+                // Si hay texto, armamos la URL con el parámetro 'q'
+                const url = textoBusqueda 
+                    ? `http://127.0.0.1:5000/api/pacientes?q=${encodeURIComponent(textoBusqueda)}` 
+                    : 'http://127.0.0.1:5000/api/pacientes';
+
+                const response = await fetch(url);
                 const pacientes = await response.json();
+                
                 tablaPacientes.innerHTML = ''; 
 
                 if (pacientes.length === 0) {
-                    tablaPacientes.innerHTML = '<tr><td colspan="4" class="text-center py-4">No hay pacientes registradas.</td></tr>';
+                    tablaPacientes.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-muted">No se encontraron pacientes para "${textoBusqueda}".</td></tr>`;
                     return;
                 }
 
-                // Paleta de colores para los círculos de iniciales
                 const colores = ['#eaddff', '#e0e2e6', '#d3e3fd', '#f8d9e0'];
                 const textos = ['var(--tertiary)', 'var(--on-surface-variant)', '#0b57d0', '#9c1c38'];
 
                 pacientes.forEach((p, index) => {
-                    // Extraer las iniciales del nombre (Ej: Elena Martínez -> EM)
                     const palabras = p.nombres_completos.split(' ');
                     const iniciales = (palabras[0][0] + (palabras[1] ? palabras[1][0] : '')).toUpperCase();
                     
-                    // Elegir color intercalado
                     const bg = colores[index % colores.length];
                     const color = textos[index % textos.length];
 
                     const row = document.createElement('tr');
+                    
                     row.innerHTML = `
                         <td class="ps-4 py-3">
                             <div class="d-flex align-items-center gap-3">
@@ -388,23 +423,16 @@ document.addEventListener("DOMContentLoaded", () => {
                         </td>
                         <td class="text-muted py-3">${p.cedula}</td>
                         <td class="py-3">
-                            <span class="badge bg-light text-dark border me-1">${p.edad} años</span>
-                            <span class="badge bg-light text-dark border me-1"><i class="ri-heart-pulse-line text-danger"></i> ${p.signos_vitales.presion}</span>
-                            <span class="badge bg-light text-dark border"><i class="ri-drop-fill text-info"></i> ${p.signos_vitales.glucosa}</span>
+                            <span class="badge bg-light text-dark border">${p.edad} años</span>
                         </td>
                         <td class="pe-4 text-center py-3">
-                            <button class="btn btn-sm text-decoration-none fw-bold btn-analizar" 
-                                    style="color: var(--primary); font-size: 0.875rem;"
-                                    data-nombre="${p.nombres_completos}"
-                                    data-datos='${JSON.stringify(p.signos_vitales)}'>
-                                Analizar <i class="ri-magic-line"></i>
-                            </button>
+                            <a href="dashboard.html?id=${p.id_paciente}" class="btn btn-link text-decoration-none fw-bold" style="color: var(--primary); font-size: 0.875rem;">
+                                Seleccionar
+                            </a>
                         </td>
                     `;
                     tablaPacientes.appendChild(row);
                 });
-
-                activarBotonesIA();
 
             } catch (error) {
                 console.error("Error al cargar pacientes:", error);
@@ -412,64 +440,76 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
-        // ==========================================
-        // 8. EL PATRÓN FACADE (Consumir la IA)
-        // ==========================================
-        function activarBotonesIA() {
-            const modalDiagnostico = new bootstrap.Modal(document.getElementById('modalDiagnostico'));
-            const cuerpoModal = document.getElementById('cuerpo-modal-diagnostico');
-            
-            document.querySelectorAll('.btn-analizar').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    const nombre = e.currentTarget.getAttribute('data-nombre');
-                    const datosVitales = e.currentTarget.getAttribute('data-datos');
-                    
-                    // Mostramos el modal de carga
-                    cuerpoModal.innerHTML = `
-                        <div class="text-center py-4">
-                            <div class="spinner-border mb-3" style="color: var(--primary); width: 3rem; height: 3rem;" role="status"></div>
-                            <h5 class="fw-bold text-dark">El Oráculo está analizando...</h5>
-                            <p class="text-muted small">Procesando los signos vitales de ${nombre} usando Gemini 1.5 Pro</p>
-                        </div>
-                    `;
-                    modalDiagnostico.show();
+        // 4. CONECTAR LOS BOTONES DEL BUSCADOR
+        const inputBuscar = document.getElementById('buscar-paciente');
+        const btnBuscar = document.getElementById('btn-buscar');
 
-                    // Llamamos a nuestro Facade en el backend
-                    try {
-                        const response = await fetch('http://127.0.0.1:5000/api/predecir', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ signos_vitales: JSON.parse(datosVitales) })
-                        });
+        if (btnBuscar && inputBuscar) {
+            // Al hacer clic en buscar
+            btnBuscar.addEventListener('click', (e) => {
+                e.preventDefault();
+                cargarPacientes(inputBuscar.value.trim());
+            });
 
-                        const diagnostico = await response.json();
+            // Al presionar Enter
+            inputBuscar.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    cargarPacientes(inputBuscar.value.trim());
+                }
+            });
 
-                        // Pintamos el resultado de la IA
-                        if (response.ok) {
-                            cuerpoModal.innerHTML = `
-                                <h5 class="fw-bold" style="color: var(--error);"><i class="ri-alert-fill"></i> Posible Complicación:</h5>
-                                <p class="fs-5">${diagnostico.enfermedad_predicha}</p>
-                                
-                                <h6 class="fw-bold mt-4" style="color: var(--primary);">Justificación Clínica:</h6>
-                                <p class="text-muted">${diagnostico.justificacion}</p>
-                                
-                                <div class="p-3 mt-4 rounded-3" style="background-color: #eaddff; border-left: 4px solid var(--tertiary);">
-                                    <h6 class="fw-bold m-0 mb-2" style="color: var(--tertiary);">Recomendación:</h6>
-                                    <p class="m-0 text-dark small">${diagnostico.recomendacion_medica}</p>
-                                </div>
-                            `;
-                        } else {
-                            cuerpoModal.innerHTML = `<div class="alert alert-danger">Error del Oráculo: ${diagnostico.error}</div>`;
-                        }
-                    } catch (error) {
-                        cuerpoModal.innerHTML = `<div class="alert alert-danger">Error de conexión con el servidor.</div>`;
-                    }
-                });
+            // Si borran todo el texto, recargar la tabla normal
+            inputBuscar.addEventListener('input', () => {
+                if (inputBuscar.value.trim() === '') {
+                    cargarPacientes();
+                }
             });
         }
 
-        // Ejecutar al cargar la página
+        // 5. Cargar inicial
         cargarPacientes();
+    }
+
+    // ==========================================
+    // 8. LÓGICA DEL DASHBOARD / FICHA TÉCNICA (dashboard.html)
+    // ==========================================
+    // Verificamos de forma estricta que estemos REALMENTE en dashboard.html
+    if (window.location.pathname.includes('dashboard.html')) {
+        
+        // 1. Proteger ruta y mostrar nombre del médico
+        const nombreMedicoNavDash = document.getElementById('nombre-medico-nav');
+        if (nombreMedicoNavDash) {
+            const nombreGuardado = sessionStorage.getItem('nombre_medico');
+            if (nombreGuardado) {
+                nombreMedicoNavDash.innerText = nombreGuardado;
+            } else {
+                window.location.href = 'index.html';
+            }
+        }
+
+        // 2. Botón Logout
+        const btnLogoutDash = document.getElementById('btn-logout-medico');
+        if (btnLogoutDash) {
+            btnLogoutDash.addEventListener('click', (e) => {
+                e.preventDefault();
+                sessionStorage.clear();
+                window.location.href = 'index.html';
+            });
+        }
+
+        // 3. Capturar el ID de la URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const idPaciente = urlParams.get('id');
+
+        // Si estamos en dashboard.html pero no hay ID, lo devolvemos
+        if (idPaciente) {
+            console.log("Cargando ficha del paciente ID:", idPaciente);
+        } else {
+            window.location.href = 'patients.html';
+        }
+
+        // 4. Aquí irá el Facade de IA más adelante...
     }
 
     // ==========================================
