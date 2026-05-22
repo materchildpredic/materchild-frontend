@@ -4,18 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Materchild Predic - Consulta Paciente</title>
-    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
-    
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body class="bg-light">
     <div class="container-fluid p-0 d-flex vh-100 overflow-hidden" style="background-color: var(--surface);">
         
         <aside class="d-none d-md-flex flex-column flex-shrink-0 p-3 shadow-sm" style="width: 260px; background-color: var(--surface-container);">
-            
             <div class="d-flex align-items-center gap-3 mb-5 mt-3 px-2">
                 <img src="assets/logo.png" alt="Logo" style="height: 32px; filter: grayscale(100%) brightness(50%) sepia(100%) hue-rotate(150deg) saturate(300%);" onerror="this.style.display='none'">
                 <div>
@@ -24,22 +20,21 @@
             </div>
 
             <nav class="nav nav-pills flex-column mb-auto gap-2">
-                <a href="patients.html" class="nav-link active d-flex align-items-center gap-2 py-3 px-3 fw-medium" style="background-color: var(--surface-container-lowest); color: var(--primary); box-shadow: var(--shadow-ambient); border-radius: 12px;">
+                <a href="#" class="nav-link active d-flex align-items-center gap-2 py-3 px-3 fw-medium" style="background-color: var(--surface-container-lowest); color: var(--primary); box-shadow: var(--shadow-ambient); border-radius: 12px;">
                     <i class="ri-user-search-line fs-5"></i>
                     Consulta de Cliente
                 </a>
             </nav>
 
             <div class="mt-auto px-2 pb-3">
-                <a href="index.html" class="d-flex align-items-center gap-2 text-decoration-none fw-medium" style="color: var(--error);">
+                <a href="#" id="btn-logout-medico" class="d-flex align-items-center gap-2 text-decoration-none fw-medium" style="color: var(--error);">
                     <i class="ri-logout-box-r-line fs-5"></i>
-                    Logout
+                    Cerrar Sesión
                 </a>
             </div>
         </aside>
 
         <main class="flex-grow-1 p-4 p-md-5 overflow-y-auto">
-            
             <header class="d-flex justify-content-between align-items-center mb-5">
                 <div class="d-flex align-items-center gap-3">
                     <h2 class="m-0 fw-bold d-none d-sm-block" style="color: var(--primary); font-size: 1.125rem;">Materchild Predic</h2>
@@ -47,14 +42,10 @@
                 </div>
                 
                 <div class="d-flex align-items-center gap-4">
-                    <button class="btn btn-link text-muted p-0 text-decoration-none">
-                        <i class="ri-notification-3-line fs-4"></i>
-                    </button>
-                    
                     <div class="d-flex align-items-center gap-3">
                         <div class="text-end d-none d-sm-block">
-                            <p class="m-0 fw-semibold" style="font-size: 0.875rem;">Dr. Alejandro Rios</p>
-                            <p class="m-0 text-muted" style="font-size: 0.75rem;">Investigador Clínico</p>
+                            <p class="m-0 fw-semibold" style="font-size: 0.875rem;" id="nombre-medico-nav">Médico Activo</p>
+                            <p class="m-0 text-muted" style="font-size: 0.75rem;" id="especialidad-medico-nav">Especialidad</p>
                         </div>
                         <div class="rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 40px; height: 40px; background-color: var(--surface-container-highest);">
                             <i class="ri-user-line" style="color: var(--primary); font-size: 1.25rem;"></i>
@@ -63,31 +54,26 @@
                 </div>
             </header>
 
-            <div class="container-fluid" style="max-width: 900px;">
-                
+            <div class="container-fluid" style="max-width: 1000px;">
                 <div class="text-center mt-4 mb-5">
                     <h1 class="display-6 fw-bold mb-3" style="font-family: var(--font-display);">Consulta Paciente</h1>
                     <p class="text-muted mx-auto" style="font-size: 1rem; max-width: 600px; line-height: 1.6;">
                         Acceda a la base de datos predictiva de Materchild. Los datos mostrados son <span style="color: var(--primary); font-weight: 500;">sintéticos</span> generados para protocolos de investigación clínica.
                     </p>
+                    </p>
                 </div>
 
                 <div class="d-flex align-items-center bg-white rounded-4 p-2 ps-4 shadow-sm border mb-5" style="border-color: var(--ghost-border) !important;">
                     <i class="ri-search-line text-muted fs-5 me-3"></i>
-                    <input type="text" class="form-control border-0 shadow-none bg-transparent" placeholder="Buscar por nombre o número de identificación..." style="font-size: 1rem;">
-                    <button class="btn btn-primary fw-semibold px-4 py-2 rounded-3" style="background-color: var(--primary); border: none;">BUSCAR</button>
+                    <input type="text" id="buscar-paciente" class="form-control border-0 shadow-none bg-transparent" placeholder="Buscar por nombre o número de identificación..." style="font-size: 1rem;">
+                    <button id="btn-buscar" class="btn btn-primary fw-semibold px-4 py-2 rounded-3" style="background-color: var(--primary); border: none;">BUSCAR</button>
                 </div>
 
                 <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
-                    
                     <div class="d-flex justify-content-between align-items-center p-4 border-bottom bg-white">
                         <div class="d-flex align-items-center gap-2">
                             <i class="ri-history-line fs-5" style="color: var(--tertiary);"></i>
                             <h3 class="m-0 fw-bold" style="font-size: 1.125rem;">Pacientes Recientes</h3>
-                        </div>
-                        <div class="d-flex align-items-center gap-2">
-                            <div class="insight-spark"></div>
-                            <span class="text-muted fw-semibold" style="font-size: 0.75rem; letter-spacing: 0.05em;">DATOS ACTUALIZADOS</span>
                         </div>
                     </div>
 
@@ -95,73 +81,23 @@
                         <table class="table table-borderless table-hover align-middle mb-0">
                             <thead style="border-bottom: 1px solid var(--ghost-border);">
                                 <tr>
-                                    <th class="text-muted fw-semibold py-3 ps-4" style="font-size: 0.75rem; letter-spacing: 0.05em; width: 35%;">NOMBRE COMPLETO</th>
-                                    <th class="text-muted fw-semibold py-3" style="font-size: 0.75rem; letter-spacing: 0.05em; width: 20%;">ID IDENTIFICACIÓN</th>
-                                    <th class="text-muted fw-semibold py-3" style="font-size: 0.75rem; letter-spacing: 0.05em; width: 20%;">ÚLTIMA VISITA</th>
-                                    <th class="text-muted fw-semibold py-3 pe-4 text-center" style="font-size: 0.75rem; letter-spacing: 0.05em; width: 10%;">ACCIÓN</th>
+                                    <th class="text-muted fw-semibold py-3 ps-4" style="font-size: 0.75rem; letter-spacing: 0.05em; width: 40%;">NOMBRE COMPLETO</th>
+                                    <th class="text-muted fw-semibold py-3" style="font-size: 0.75rem; letter-spacing: 0.05em; width: 25%;">ID IDENTIFICACIÓN</th>
+                                    <th class="text-muted fw-semibold py-3" style="font-size: 0.75rem; letter-spacing: 0.05em; width: 20%;">EDAD</th>
+                                    <th class="text-muted fw-semibold py-3 pe-4 text-center" style="font-size: 0.75rem; letter-spacing: 0.05em; width: 15%;">ACCIÓN</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="tabla-pacientes">
                                 <tr>
-                                    <td class="ps-4 py-3">
-                                        <div class="d-flex align-items-center gap-3">
-                                            <div class="rounded-3 d-flex align-items-center justify-content-center fw-bold" style="width: 36px; height: 36px; background-color: var(--secondary-container); color: var(--primary); font-size: 0.8rem;">EM</div>
-                                            <span class="fw-semibold text-dark">Elena Martínez</span>
-                                        </div>
-                                    </td>
-                                    <td class="text-muted">1.032.485.901</td>
-                                    <td class="text-muted">12 Oct 2023</td>
-                                    <td class="pe-4 text-center">
-                                        <a href="dashboard.html" class="btn btn-link text-decoration-none fw-bold" style="color: var(--primary); font-size: 0.875rem;">Seleccionar</a>
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td class="ps-4 py-3">
-                                        <div class="d-flex align-items-center gap-3">
-                                            <div class="rounded-3 d-flex align-items-center justify-content-center fw-bold" style="width: 36px; height: 36px; background-color: #eaddff; color: var(--tertiary); font-size: 0.8rem;">JG</div>
-                                            <span class="fw-semibold text-dark">Julieta Gómez</span>
-                                        </div>
-                                    </td>
-                                    <td class="text-muted">1.018.234.567</td>
-                                    <td class="text-muted">05 Nov 2023</td>
-                                    <td class="pe-4 text-center">
-                                        <a href="dashboard.html" class="btn btn-link text-decoration-none fw-bold" style="color: var(--primary); font-size: 0.875rem;">Seleccionar</a>
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td class="ps-4 py-3">
-                                        <div class="d-flex align-items-center gap-3">
-                                            <div class="rounded-3 d-flex align-items-center justify-content-center fw-bold" style="width: 36px; height: 36px; background-color: #e0e2e6; color: var(--on-surface-variant); font-size: 0.8rem;">SC</div>
-                                            <span class="fw-semibold text-dark">Sofía Castro</span>
-                                        </div>
-                                    </td>
-                                    <td class="text-muted">1.085.123.987</td>
-                                    <td class="text-muted">28 Oct 2023</td>
-                                    <td class="pe-4 text-center">
-                                        <a href="dashboard.html" class="btn btn-link text-decoration-none fw-bold" style="color: var(--primary); font-size: 0.875rem;">Seleccionar</a>
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td class="ps-4 py-3">
-                                        <div class="d-flex align-items-center gap-3">
-                                            <div class="rounded-3 d-flex align-items-center justify-content-center fw-bold" style="width: 36px; height: 36px; background-color: var(--secondary-container); color: var(--primary); font-size: 0.8rem;">MR</div>
-                                            <span class="fw-semibold text-dark">Mariana Rivera</span>
-                                        </div>
-                                    </td>
-                                    <td class="text-muted">1.110.456.789</td>
-                                    <td class="text-muted">Hoy, 09:15</td>
-                                    <td class="pe-4 text-center">
-                                        <a href="dashboard.html" class="btn btn-link text-decoration-none fw-bold" style="color: var(--primary); font-size: 0.875rem;">Seleccionar</a>
+                                    <td colspan="4" class="text-center py-5">
+                                        <div class="spinner-border text-primary" role="status"></div>
+                                        <p class="mt-2 text-muted">Cargando base de datos...</p>
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
-
                 <div class="d-flex flex-column flex-sm-row gap-3 p-4 rounded-4" style="background-color: var(--surface-container-highest);">
                     <div class="rounded-4 d-flex align-items-center justify-content-center shadow-sm flex-shrink-0" style="width: 48px; height: 48px; background-color: var(--surface-container-lowest);">
                         <i class="ri-shield-keyhole-line fs-4" style="color: var(--tertiary);"></i>
@@ -171,9 +107,27 @@
                         <p class="text-muted small mb-0" style="line-height: 1.6;">Este sistema opera exclusivamente con Sistemas de Datos Sintéticos para Investigación. Toda la información presentada es generada algorítmicamente para imitar distribuciones clínicas reales sin comprometer la privacidad de pacientes reales. Cumple con los protocolos de ética de datos de Materchild.</p>
                     </div>
                 </div>
-
             </div>
         </main>
     </div>
+
+    <div class="modal fade" id="modalDiagnostico" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow-lg">
+                <div class="modal-header text-white text-center d-block rounded-top-4 py-4" style="background-color: var(--primary);">
+                    <h4 class="modal-title fw-bold"><i class="ri-brain-line me-2"></i>Predicción - Materchild Predic</h4>
+                </div>
+                <div class="modal-body p-5" id="cuerpo-modal-diagnostico">
+                    </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary rounded-3" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn rounded-3 text-white" style="background-color: var(--tertiary);">Guardar en Historial</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/main.js"></script>
 </body>
 </html>

@@ -87,9 +87,9 @@
             </nav>
 
             <div class="mt-auto px-2 pb-3">
-                <a href="index.html" class="d-flex align-items-center gap-2 text-decoration-none fw-medium" style="color: var(--error);">
+                <a href="index.html" id="btn-logout-medico" class="d-flex align-items-center gap-2 text-decoration-none fw-medium" style="color: var(--error);">
                     <i class="ri-logout-box-r-line fs-5"></i>
-                    Logout
+                    Cerrar Sesión
                 </a>
             </div>
         </aside>
@@ -103,8 +103,8 @@
                 
                 <div class="d-flex align-items-center gap-3">
                     <div class="text-end d-none d-sm-block">
-                        <p class="m-0 fw-semibold" style="font-size: 0.875rem;">Dr. Alejandro Rios</p>
-                        <p class="m-0 text-muted" style="font-size: 0.75rem;">Investigador Clínico</p>
+                        <p class="m-0 fw-semibold" style="font-size: 0.875rem;" id="nombre-medico-nav">Médico Activo</p>
+                        <p class="m-0 text-muted" style="font-size: 0.75rem;" id="especialidad-medico-nav">Especialidad</p>
                     </div>
                     <div class="rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 40px; height: 40px; background-color: var(--surface-container-highest);">
                         <i class="ri-user-line" style="color: var(--primary); font-size: 1.25rem;"></i>
@@ -117,14 +117,14 @@
                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end mb-5 gap-3">
                     <div>
                         <h1 class="display-5 fw-bold mb-2" style="font-family: var(--font-display);">Ficha Técnica</h1>
-                        <p class="text-muted fs-5 m-0">Expediente Clínico Sintético: #MC-2024-0892</p>
+                        <p class="text-muted fs-5 m-0" id="expediente-paciente">Expediente Clínico Sintético: Cargando...</p>
                     </div>
                     <div class="d-flex gap-2">
-                        <button class="btn btn-light fw-medium border shadow-sm" style="border-radius: 10px;">
-                            <i class="ri-history-line align-middle"></i> Historial
+                        <button class="btn btn-outline-secondary px-4 py-3 fw-semibold shadow-sm d-flex align-items-center gap-2" style="border-radius: 12px; font-size: 1.1rem;">
+                            <i class="ri-mail-send-line fs-5"></i> Enviar al Correo
                         </button>
-                        <button class="btn btn-primary fw-medium shadow-sm" style="background-color: var(--primary); border: none; border-radius: 10px;">
-                            <i class="ri-edit-line align-middle"></i> Editar Datos
+                        <button class="btn btn-primary px-4 py-3 fw-semibold shadow-sm d-flex align-items-center gap-2" style="background-color: var(--primary); border: none; border-radius: 12px; font-size: 1.1rem;">
+                            <i class="ri-survey-line fs-5"></i> Diagnóstico
                         </button>
                     </div>
                 </div>
@@ -149,7 +149,7 @@
 
                             <div class="mt-auto position-relative" style="z-index: 1;">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span class="fw-medium text-dark" style="font-size: 0.8rem;">Confianza de IA</span>
+                                    <span class="fw-medium text-dark" style="font-size: 0.8rem;">Confianza de motor de reglas</span>
                                     <span class="fw-bold" style="color: var(--tertiary); font-size: 0.8rem;">94%</span>
                                 </div>
                                 <div class="progress" style="height: 6px; background-color: var(--surface-variant);">
@@ -164,25 +164,25 @@
                             <div class="col-md-6 col-sm-6 d-flex">
                                 <div class="card border-0 shadow-sm rounded-4 w-100 p-4">
                                     <div class="metric-title"><i class="ri-calendar-event-line fs-5"></i> EDAD</div>
-                                    <div class="metric-value mt-3">25 <span class="metric-unit">años</span></div>
+                                    <div class="metric-value mt-3" id="val-edad">-- <span class="metric-unit">años</span></div>
                                 </div>
                             </div>
                             <div class="col-md-6 col-sm-6 d-flex">
                                 <div class="card border-0 shadow-sm rounded-4 w-100 p-4">
                                     <div class="metric-title"><i class="ri-temp-hot-line fs-5"></i> TEMP. CORPORAL</div>
-                                    <div class="metric-value mt-3">37.0 <span class="metric-unit">°C</span></div>
+                                    <div class="metric-value mt-3" id="val-temperatura">-- <span class="metric-unit">°C</span></div>
                                 </div>
                             </div>
                             <div class="col-md-6 col-sm-6 d-flex">
                                 <div class="card border-0 shadow-sm rounded-4 w-100 p-4">
                                     <div class="metric-title"><i class="ri-women-line fs-5"></i> SEMANAS GESTACIÓN</div>
-                                    <div class="metric-value mt-3">32 <span class="metric-unit">semanas</span></div>
+                                    <div class="metric-value mt-3" id="val-semanas">-- <span class="metric-unit">semanas</span></div>
                                 </div>
                             </div>
                             <div class="col-md-6 col-sm-6 d-flex">
                                 <div class="card border-0 shadow-sm rounded-4 w-100 p-4">
                                     <div class="metric-title"><i class="ri-weight-line fs-5"></i> PESO</div>
-                                    <div class="metric-value mt-3">74.5 <span class="metric-unit">kg</span></div>
+                                    <div class="metric-value mt-3" id="val-peso">-- <span class="metric-unit">kg</span></div>
                                 </div>
                             </div>
                         </div>
@@ -198,11 +198,11 @@
                     <div class="row text-center text-md-start">
                         <div class="col-md-6 border-md-end mb-3 mb-md-0 border-end-0 border-end-md">
                             <span class="text-muted small fw-medium text-uppercase">Sistólica</span>
-                            <div class="metric-value mt-1">150 <span class="metric-unit">mmHg</span></div>
+                            <div class="metric-value mt-1" id="val-sistolica">-- <span class="metric-unit">mmHg</span></div>
                         </div>
                         <div class="col-md-6 ps-md-5">
                             <span class="text-muted small fw-medium text-uppercase">Diastólica</span>
-                            <div class="metric-value mt-1">100 <span class="metric-unit">mmHg</span></div>
+                            <div class="metric-value mt-1" id="val-diastolica">-- <span class="metric-unit">mmHg</span></div>
                         </div>
                     </div>
                 </div>
@@ -214,11 +214,11 @@
                                 <div class="metric-title"><i class="ri-drop-line fs-5"></i> AZÚCAR EN SANGRE / GLUCEMIA</div>
                                 <div class="insight-spark m-0"></div>
                             </div>
-                            <div class="metric-value mb-4">110 <span class="metric-unit">mg/dL</span></div>
+                            <div class="metric-value mb-4" id="val-glucosa">-- <span class="metric-unit">mg/dL</span></div>
                             
                             <div class="insight-note">
                                 <p class="m-0" style="font-size: 0.85rem; color: var(--tertiary); line-height: 1.5;">
-                                    <strong>Nota del Oráculo:</strong> Los niveles de glucemia muestran una tendencia ascendente en las últimas 24h.
+                                    <strong>Nota del Motor de riesgo:</strong> Los niveles de glucemia muestran una tendencia ascendente en las últimas 24h.
                                 </p>
                             </div>
                         </div>
@@ -227,7 +227,7 @@
                     <div class="col-lg-6 d-flex">
                         <div class="card border-0 shadow-sm rounded-4 w-100 p-4">
                             <div class="metric-title"><i class="ri-heart-pulse-line fs-5"></i> FRECUENCIA CARDÍACA</div>
-                            <div class="metric-value mt-3 mb-1">70 <span class="metric-unit">BPM</span></div>
+                            <div class="metric-value mt-3 mb-1" id="val-frecuencia">-- <span class="metric-unit">BPM</span></div>
 
                             <div class="bar-chart mt-auto">
                                 <div class="bar" style="height: 30%;"></div>
@@ -244,12 +244,7 @@
                 </div>
 
                 <div class="d-flex flex-wrap gap-3 mt-5 mb-5">
-                    <button class="btn btn-primary px-4 py-3 fw-semibold shadow-sm d-flex align-items-center gap-2" style="background-color: var(--primary); border: none; border-radius: 12px; font-size: 1.1rem;">
-                        <i class="ri-survey-line fs-5"></i> Diagnóstico
-                    </button>
-                    <button class="btn btn-outline-secondary px-4 py-3 fw-semibold shadow-sm d-flex align-items-center gap-2" style="border-radius: 12px; font-size: 1.1rem;">
-                        <i class="ri-mail-send-line fs-5"></i> Enviar al Correo
-                    </button>
+                    
                 </div>
 
                 <div class="d-flex flex-column flex-sm-row gap-3 p-4 rounded-4" style="background-color: var(--surface-container-highest);">
@@ -265,5 +260,7 @@
             </div>
         </main>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/main.js"></script>
 </body>
 </html>

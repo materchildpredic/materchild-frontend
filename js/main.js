@@ -5,7 +5,15 @@ document.addEventListener("DOMContentLoaded", () => {
     // Capturamos los formularios
     const loginForm = document.getElementById('login-form');
     const registerForm = document.getElementById('register-form');
+    const verifyForm = document.getElementById('verify-form');
+    const adminLoginForm = document.getElementById('admin-login-form');
+    const adminUploadForm = document.getElementById('admin-upload-form');
+    const btnProcesar = document.getElementById('btn-procesar-lote');
+    const tablaPacientes = document.getElementById('tabla-pacientes');
+    const cuerpoModal = document.getElementById('cuerpo-modal-diagnostico');
+    const btnResend = document.getElementById('btn-resend');
 
+    
     // ==========================================
     // 1. LÓGICA PARA INICIO DE SESIÓN (index.html)
     // ==========================================
@@ -18,7 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
             
             // Cambiamos el estado del botón a "cargando"
             const textoOriginal = btnLogin.innerHTML;
-            btnLogin.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Conectando Oráculo...';
+            btnLogin.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Conectando...';
             btnLogin.disabled = true;
 
             try {
@@ -33,7 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 if (response.ok) {
                     // Guardamos el correo en el navegador para usarlo en verify.html
-                    sessionStorage.setItem('correo_medico', email);
+                    sessionStorage.setItem('email_medico', email);
                     // Redirigimos a la pantalla de verificación
                     window.location.href = 'verify.html';
                 } else {
@@ -57,35 +65,56 @@ document.addEventListener("DOMContentLoaded", () => {
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            const nombre = document.getElementById('reg-nombre').value;
+            // 1. Capturamos los datos usando los IDs correctos (nombres y apellidos separados)
+            const nombres = document.getElementById('reg-nombres').value;
+            const apellidos = document.getElementById('reg-apellidos').value;
+            const correo_institucional = document.getElementById('reg-email').value;
             const especialidad = document.getElementById('reg-especialidad').value;
-            const email = document.getElementById('reg-email').value;
             const btnRegister = document.getElementById('btn-register');
-
+            
             btnRegister.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Creando perfil...';
             btnRegister.disabled = true;
 
             try {
-                const response = await fetch(`${API_URL}/solicitar-otp`, {
+                // PASO A: Llamamos a la ruta que guarda al médico en la base de datos
+                const responseRegistro = await fetch('http://127.0.0.1:5000/api/auth/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        correo: email,
-                        nombre: nombre,
-                        especialidad: especialidad
-                    })
+                    body: JSON.stringify({ nombres, apellidos, correo_institucional, especialidad })
                 });
 
-                const data = await response.json();
+                const dataRegistro = await responseRegistro.json();
 
-                if (response.ok) {
-                    sessionStorage.setItem('correo_medico', email);
+                // Si el correo ya existe o falta un dato, frenamos aquí y mostramos el error
+                if (!responseRegistro.ok) {
+                    alert(`Error en registro: ${dataRegistro.error}`);
+                    btnRegister.innerHTML = 'Registrarse y Recibir Código <i class="ri-send-plane-line"></i>';
+                    btnRegister.disabled = false;
+                    return; 
+                }
+
+                // PASO B: Si se guardó en la base de datos, solicitamos el código a su correo
+                btnRegister.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Enviando código al correo...';
+                
+                const responseOtp = await fetch('http://127.0.0.1:5000/api/auth/solicitar-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ correo: correo_institucional }) // Solo necesita el correo
+                });
+
+                const dataOtp = await responseOtp.json();
+
+                if (responseOtp.ok) {
+                    // Guardamos el "post-it" en el navegador para que verify.html lo pueda leer
+                    sessionStorage.setItem('email_medico', correo_institucional);
+                    // Redirigimos a la pantalla para que ingrese el código
                     window.location.href = 'verify.html';
                 } else {
-                    alert(`Error: ${data.error}`);
+                    alert(`Error al enviar el código: ${dataOtp.error}`);
                     btnRegister.innerHTML = 'Registrarse y Recibir Código <i class="ri-send-plane-line"></i>';
                     btnRegister.disabled = false;
                 }
+
             } catch (error) {
                 console.error("Error de conexión:", error);
                 alert("No se pudo conectar con el servidor.");
@@ -98,11 +127,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================
     // 3. LÓGICA PARA VERIFICAR OTP (verify.html)
     // ==========================================
-    const verifyForm = document.getElementById('verify-form');
-    
     if (verifyForm) {
         // Recuperamos el correo que guardamos en la pantalla anterior
-        const correoGuardado = sessionStorage.getItem('correo_medico');
+        const correoGuardado = sessionStorage.getItem('email_medico');
         
         // Si alguien intenta entrar directo a verify.html sin poner su correo, lo devolvemos
         if (!correoGuardado) {
@@ -146,6 +173,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (response.ok) {
                     // ¡Éxito! Guardamos el nombre del doctor para usarlo en el dashboard
                     sessionStorage.setItem('nombre_medico', data.usuario.nombre_completo);
+                    sessionStorage.setItem('especialidad_medico', data.usuario.especialidad);
+                    // Opcional: guardar un token para saber que está logueado
+                    sessionStorage.setItem('token_sesion', 'sesion_activa');
                     // Redirigimos al sistema
                     window.location.href = 'patients.html';
                 } else {
@@ -168,7 +198,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================
     // 4. LÓGICA LOGIN ADMINISTRADOR (admin_login.html)
     // ==========================================
-    const adminLoginForm = document.getElementById('admin-login-form');
     if (adminLoginForm) {
         adminLoginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -209,7 +238,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================
     // 5. LÓGICA SUBIDA DE CSV (admin_dashboard.html)
     // ==========================================
-    const adminUploadForm = document.getElementById('admin-upload-form');
     if (adminUploadForm) {
         // Protección de pantalla: Si no es admin, lo rebota
         if (!sessionStorage.getItem('admin_sesion')) {
@@ -265,6 +293,334 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById('btn-logout-admin')?.addEventListener('click', () => {
             sessionStorage.removeItem('admin_sesion');
             window.location.href = 'admin_login.html';
+        });
+    }
+
+    // ==========================================
+    // 6. LÓGICA DEL BOTÓN DE IA (Procesamiento en Lotes Automático)
+    // ==========================================
+    if (btnProcesar) {
+        btnProcesar.addEventListener('click', async () => {
+            const statusDiv = document.getElementById('ai-status');
+                
+            btnProcesar.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Procesamiento Automático Iniciado...';
+            btnProcesar.disabled = true;
+                
+            let restantes = 1; // Inicializamos en 1 para entrar al ciclo
+            let tamanoLote = 50; // Procesaremos de a 50 pacientes por petición
+
+            try {
+                while (restantes > 0) {
+                    statusDiv.innerHTML = `<span class="text-primary">Llamando al Motor de reglas... Estructurando un lote de ${tamanoLote} pacientes. Por favor espera...</span>`;
+                        
+                    const response = await fetch('http://127.0.0.1:5000/api/data/procesar-lote', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ lote: tamanoLote })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        restantes = data.restantes;
+                            
+                        // Si ya no quedan registros, avisamos y rompemos el ciclo
+                        if (restantes === 0) {
+                            statusDiv.innerHTML = `<span class="text-success fw-bold">✨ ¡Proceso completado! Todos los datos crudos fueron convertidos a pacientes reales.</span>`;
+                            btnProcesar.innerHTML = '<i class="ri-check-double-line me-2"></i> Base de Datos Lista';
+                            break;
+                        } else {
+                            // Mostramos el progreso y el ciclo vuelve a empezar
+                            statusDiv.innerHTML = `<span class="text-success">✔ Lote estructurado con éxito.</span><br>Pacientes restantes en cola: <strong>${restantes}</strong>... procesando el siguiente lote...`;
+                        }
+                    } else {
+                        // Si la IA falla o se satura, nos detenemos para no hacer daño
+                    statusDiv.innerHTML = `<span class="text-danger">❌ El ciclo se detuvo por un error: ${data.error}</span>`;
+                    btnProcesar.disabled = false;
+                    btnProcesar.innerHTML = '<i class="ri-play-line me-2"></i> Reanudar Procesamiento';
+                    break; 
+                    }
+                }
+            } catch (error) {
+                console.error("Error en el ciclo:", error);
+                statusDiv.innerHTML = '<span class="text-danger">❌ Error crítico de red. El proceso se detuvo.</span>';
+                btnProcesar.disabled = false;
+                btnProcesar.innerHTML = '<i class="ri-play-line me-2"></i> Reanudar Procesamiento';
+            }
+        });
+    }
+
+    // ==========================================
+    // 7. LÓGICA DE CONSULTA DE PACIENTES (patients.html)
+    // ==========================================   
+    if (tablaPacientes) {
+        
+        // 1. Mostrar nombre del médico y proteger la ruta
+        const nombreMedicoNav = document.getElementById('nombre-medico-nav');
+        const especialidadMedicoNav = document.getElementById('especialidad-medico-nav'); // Capturamos el nuevo elemento
+
+        if (nombreMedicoNav) {
+            const nombreGuardado = sessionStorage.getItem('nombre_medico');
+            const especialidadGuardada = sessionStorage.getItem('especialidad_medico'); // Traemos la especialidad de memoria
+
+            if (nombreGuardado) {
+                nombreMedicoNav.innerText = nombreGuardado;
+            } else {
+                // Si no hay nombre en memoria, lo devolvemos al login
+                window.location.href = 'index.html';
+            }
+            if (especialidadMedicoNav && especialidadGuardada) {
+                especialidadMedicoNav.innerText = especialidadGuardada;
+            } else {
+                window.location.href = 'index.html';
+            }
+        }
+
+        // 2. Habilitar el botón de Cerrar Sesión
+        const btnLogout = document.getElementById('btn-logout-medico');
+        if (btnLogout) {
+            btnLogout.addEventListener('click', (e) => {
+                e.preventDefault();
+                sessionStorage.clear();
+                window.location.href = 'index.html';
+            });
+        }
+
+        // 3. Cargar las pacientes (AHORA RECIBE EL TEXTO A BUSCAR)
+        async function cargarPacientes(textoBusqueda = '') {
+            try {
+                // Si hay texto, armamos la URL con el parámetro 'q'
+                const url = textoBusqueda 
+                    ? `http://127.0.0.1:5000/api/pacientes?q=${encodeURIComponent(textoBusqueda)}` 
+                    : 'http://127.0.0.1:5000/api/pacientes';
+
+                const response = await fetch(url);
+                const pacientes = await response.json();
+                
+                tablaPacientes.innerHTML = ''; 
+
+                if (pacientes.length === 0) {
+                    tablaPacientes.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-muted">No se encontraron pacientes para "${textoBusqueda}".</td></tr>`;
+                    return;
+                }
+
+                const colores = ['#eaddff', '#e0e2e6', '#d3e3fd', '#f8d9e0'];
+                const textos = ['var(--tertiary)', 'var(--on-surface-variant)', '#0b57d0', '#9c1c38'];
+
+                pacientes.forEach((p, index) => {
+                    const palabras = p.nombres_completos.split(' ');
+                    const iniciales = (palabras[0][0] + (palabras[1] ? palabras[1][0] : '')).toUpperCase();
+                    
+                    const bg = colores[index % colores.length];
+                    const color = textos[index % textos.length];
+
+                    const row = document.createElement('tr');
+                    
+                    row.innerHTML = `
+                        <td class="ps-4 py-3">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="rounded-3 d-flex align-items-center justify-content-center fw-bold shadow-sm" 
+                                     style="width: 36px; height: 36px; background-color: ${bg}; color: ${color}; font-size: 0.8rem;">
+                                    ${iniciales}
+                                </div>
+                                <span class="fw-semibold text-dark">${p.nombres_completos}</span>
+                            </div>
+                        </td>
+                        <td class="text-muted py-3">${p.cedula}</td>
+                        <td class="py-3">
+                            <span class="badge bg-light text-dark border">${p.edad} años</span>
+                        </td>
+                        <td class="pe-4 text-center py-3">
+                            <a href="dashboard.html?id=${p.id_paciente}" class="btn btn-link text-decoration-none fw-bold" style="color: var(--primary); font-size: 0.875rem;">
+                                Seleccionar
+                            </a>
+                        </td>
+                    `;
+                    tablaPacientes.appendChild(row);
+                });
+
+            } catch (error) {
+                console.error("Error al cargar pacientes:", error);
+                tablaPacientes.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-danger">Error de conexión.</td></tr>';
+            }
+        }
+
+        // 4. CONECTAR LOS BOTONES DEL BUSCADOR
+        const inputBuscar = document.getElementById('buscar-paciente');
+        const btnBuscar = document.getElementById('btn-buscar');
+
+        if (btnBuscar && inputBuscar) {
+            // Al hacer clic en buscar
+            btnBuscar.addEventListener('click', (e) => {
+                e.preventDefault();
+                cargarPacientes(inputBuscar.value.trim());
+            });
+
+            // Al presionar Enter
+            inputBuscar.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    cargarPacientes(inputBuscar.value.trim());
+                }
+            });
+
+            // Si borran todo el texto, recargar la tabla normal
+            inputBuscar.addEventListener('input', () => {
+                if (inputBuscar.value.trim() === '') {
+                    cargarPacientes();
+                }
+            });
+        }
+
+        // 5. Cargar inicial
+        cargarPacientes();
+    }
+
+    // ==========================================
+    // 8. LÓGICA DEL DASHBOARD / FICHA TÉCNICA (dashboard.html)
+    // ==========================================
+    // Verificamos de forma estricta que estemos REALMENTE en dashboard.html    
+    if (window.location.pathname.includes('dashboard.html') && !window.location.pathname.includes('admin')) {
+        
+        // 1. Mostrar nombre y especialidad del médico
+        const nombreMedicoNavDash = document.getElementById('nombre-medico-nav');
+        const especialidadMedicoNavDash = document.getElementById('especialidad-medico-nav');
+
+        if (nombreMedicoNavDash) {
+            const nombreGuardado = sessionStorage.getItem('nombre_medico');
+            const especialidadGuardada = sessionStorage.getItem('especialidad_medico');
+            
+            if (nombreGuardado) {
+                nombreMedicoNavDash.innerText = nombreGuardado;
+            } else {
+                // Si no hay nombre en memoria, lo devolvemos al login
+                window.location.href = 'index.html';
+            }
+            if (especialidadMedicoNavDash && especialidadGuardada) {
+                especialidadMedicoNavDash.innerText = especialidadGuardada;
+            } else {
+                window.location.href = 'index.html';
+            }
+        }
+
+        // Botón Logout
+        const btnLogoutDash = document.getElementById('btn-logout-medico') || document.getElementById('btn-logout');
+        if (btnLogoutDash) {
+            btnLogoutDash.addEventListener('click', (e) => {
+                e.preventDefault();
+                sessionStorage.clear();
+                window.location.href = 'index.html';
+            });
+        }
+
+        // Capturar el ID de la URL y pedir los datos al Backend
+        const urlParams = new URLSearchParams(window.location.search);
+        const idPaciente = urlParams.get('id');
+
+        if (idPaciente) {
+            // Ponemos texto temporal mientras carga
+            const expedienteTxt = document.getElementById('expediente-paciente');
+            if(expedienteTxt) expedienteTxt.innerText = `Cargando expediente clínico...`;
+
+            async function cargarDatosPaciente() {
+                try {
+                    const response = await fetch(`http://127.0.0.1:5000/api/pacientes/${idPaciente}`);
+                    
+                    if (response.ok) {
+                        const paciente = await response.json();
+                        // 1. Pintamos la CÉDULA en el título superior
+                        if(expedienteTxt) {
+                            expedienteTxt.innerText = `Expediente Clínico Sintético: #${paciente.cedula}`;
+                        }
+                        
+                        // 2. Pintamos los DATOS GENERALES
+                        document.getElementById('val-edad').innerHTML = `${paciente.edad} <span class="metric-unit">años</span>`;
+                        document.getElementById('val-semanas').innerHTML = `${paciente.semanas_gestacion || '--'} <span class="metric-unit">semanas</span>`;
+                        document.getElementById('val-peso').innerHTML = `${paciente.peso || '--'} <span class="metric-unit">kg</span>`;
+                        
+                        // 3. Pintamos los SIGNOS VITALES (que vienen anidados en el JSON)
+                        if (paciente.signos_vitales) {
+                            document.getElementById('val-temperatura').innerHTML = `${paciente.signos_vitales.temperatura || '--'} <span class="metric-unit">°C</span>`;
+                            document.getElementById('val-sistolica').innerHTML = `${paciente.signos_vitales.presion_sistolica || '--'} <span class="metric-unit">mmHg</span>`;
+                            document.getElementById('val-diastolica').innerHTML = `${paciente.signos_vitales.presion_diastolica || '--'} <span class="metric-unit">mmHg</span>`;
+                            document.getElementById('val-glucosa').innerHTML = `${paciente.signos_vitales.glucosa || '--'} <span class="metric-unit">mg/dL</span>`;
+                            document.getElementById('val-frecuencia').innerHTML = `${paciente.signos_vitales.ritmo_cardiaco || '--'} <span class="metric-unit">BPM</span>`;
+                        }
+                        
+                        sessionStorage.setItem('datos_paciente_actual', JSON.stringify(paciente));
+                    } else {
+                        if(expedienteTxt) expedienteTxt.innerText = `Error: Paciente no encontrado`;
+                    }
+                } catch (error) {
+                    console.error("Error cargando paciente:", error);
+                    if(expedienteTxt) expedienteTxt.innerText = `Error de conexión con el servidor.`;
+                }
+            }
+            
+            cargarDatosPaciente();
+            
+        } else {
+            // Si entra directo sin seleccionar paciente, lo devolvemos a la lista
+           window.location.href = 'patients.html';
+        }
+    }
+
+    // ==========================================
+    // 9. LÓGICA PARA REENVIAR CÓDIGO (verify.html)
+    // ==========================================
+    if (btnResend) {
+        btnResend.addEventListener('click', async (e) => {
+            e.preventDefault();
+            
+            // Sacamos el correo que guardamos previamente en la sesión
+            const correo = sessionStorage.getItem('email_medico');
+            
+            if (!correo) {
+                alert("No se encontró el correo. Por favor, vuelva a registrarse.");
+                window.location.href = 'register.html';
+                return;
+            }
+
+            // Cambiamos el texto para que el usuario sepa que está cargando
+            const textoOriginal = btnResend.innerHTML;
+            btnResend.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Reenviando...';
+            btnResend.style.pointerEvents = 'none'; // Desactiva el botón temporalmente
+
+            try {
+                // Volvemos a llamar a la ruta que genera y envía el OTP
+                const response = await fetch('http://127.0.0.1:5000/api/auth/solicitar-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ correo: correo })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert("¡Un nuevo código ha sido enviado a tu correo!");
+                    
+                    // 🆕 MAGIA UX: Limpiamos las cajitas del OTP
+                    const inputsOTP = document.querySelectorAll('input[type="text"], input[type="number"]');
+                    inputsOTP.forEach(input => {
+                        input.value = ''; // Vaciamos el contenido
+                    });
+                    
+                    // 🆕 Ponemos el cursor parpadeando en la primera cajita
+                    if (inputsOTP.length > 0) {
+                        inputsOTP[0].focus();
+                    }
+                    
+                } else {
+                    alert(`Error: ${data.error}`);
+                }
+            } catch (error) {
+                console.error("Error al reenviar:", error);
+                alert("Error de conexión al intentar reenviar el código.");
+            } finally {
+                // Restauramos el botón
+                btnResend.innerHTML = textoOriginal;
+                btnResend.style.pointerEvents = 'auto';
+            }
         });
     }
 });
