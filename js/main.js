@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
             
             // Cambiamos el estado del botón a "cargando"
             const textoOriginal = btnLogin.innerHTML;
-            btnLogin.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Conectando Oráculo...';
+            btnLogin.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Conectando...';
             btnLogin.disabled = true;
 
             try {
@@ -311,7 +311,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             try {
                 while (restantes > 0) {
-                    statusDiv.innerHTML = `<span class="text-primary">Llamando al Oráculo (Gemini)... Estructurando un lote de ${tamanoLote} pacientes. Por favor espera...</span>`;
+                    statusDiv.innerHTML = `<span class="text-primary">Llamando al Motor de reglas... Estructurando un lote de ${tamanoLote} pacientes. Por favor espera...</span>`;
                         
                     const response = await fetch('http://127.0.0.1:5000/api/data/procesar-lote', {
                         method: 'POST',
@@ -363,7 +363,12 @@ document.addEventListener("DOMContentLoaded", () => {
             const nombreGuardado = sessionStorage.getItem('nombre_medico');
             const especialidadGuardada = sessionStorage.getItem('especialidad_medico'); // Traemos la especialidad de memoria
 
-            // Si encontramos la especialidad guardada, la pintamos de inmediato
+            if (nombreGuardado) {
+                nombreMedicoNav.innerText = nombreGuardado;
+            } else {
+                // Si no hay nombre en memoria, lo devolvemos al login
+                window.location.href = 'index.html';
+            }
             if (especialidadMedicoNav && especialidadGuardada) {
                 especialidadMedicoNav.innerText = especialidadGuardada;
             } else {
@@ -474,22 +479,32 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================
     // 8. LÓGICA DEL DASHBOARD / FICHA TÉCNICA (dashboard.html)
     // ==========================================
-    // Verificamos de forma estricta que estemos REALMENTE en dashboard.html
-    if (window.location.pathname.includes('dashboard.html')) {
+    // Verificamos de forma estricta que estemos REALMENTE en dashboard.html    
+    if (window.location.pathname.includes('dashboard.html') && !window.location.pathname.includes('admin')) {
         
-        // 1. Proteger ruta y mostrar nombre del médico
+        // 1. Mostrar nombre y especialidad del médico
         const nombreMedicoNavDash = document.getElementById('nombre-medico-nav');
+        const especialidadMedicoNavDash = document.getElementById('especialidad-medico-nav');
+
         if (nombreMedicoNavDash) {
             const nombreGuardado = sessionStorage.getItem('nombre_medico');
+            const especialidadGuardada = sessionStorage.getItem('especialidad_medico');
+            
             if (nombreGuardado) {
                 nombreMedicoNavDash.innerText = nombreGuardado;
+            } else {
+                // Si no hay nombre en memoria, lo devolvemos al login
+                window.location.href = 'index.html';
+            }
+            if (especialidadMedicoNavDash && especialidadGuardada) {
+                especialidadMedicoNavDash.innerText = especialidadGuardada;
             } else {
                 window.location.href = 'index.html';
             }
         }
 
-        // 2. Botón Logout
-        const btnLogoutDash = document.getElementById('btn-logout-medico');
+        // Botón Logout
+        const btnLogoutDash = document.getElementById('btn-logout-medico') || document.getElementById('btn-logout');
         if (btnLogoutDash) {
             btnLogoutDash.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -498,18 +513,56 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
 
-        // 3. Capturar el ID de la URL
+        // Capturar el ID de la URL y pedir los datos al Backend
         const urlParams = new URLSearchParams(window.location.search);
         const idPaciente = urlParams.get('id');
 
-        // Si estamos en dashboard.html pero no hay ID, lo devolvemos
         if (idPaciente) {
-            console.log("Cargando ficha del paciente ID:", idPaciente);
-        } else {
-            window.location.href = 'patients.html';
-        }
+            // Ponemos texto temporal mientras carga
+            const expedienteTxt = document.getElementById('expediente-paciente');
+            if(expedienteTxt) expedienteTxt.innerText = `Cargando expediente clínico...`;
 
-        // 4. Aquí irá el Facade de IA más adelante...
+            async function cargarDatosPaciente() {
+                try {
+                    const response = await fetch(`http://127.0.0.1:5000/api/pacientes/${idPaciente}`);
+                    
+                    if (response.ok) {
+                        const paciente = await response.json();
+                        // 1. Pintamos la CÉDULA en el título superior
+                        if(expedienteTxt) {
+                            expedienteTxt.innerText = `Expediente Clínico Sintético: #${paciente.cedula}`;
+                        }
+                        
+                        // 2. Pintamos los DATOS GENERALES
+                        document.getElementById('val-edad').innerHTML = `${paciente.edad} <span class="metric-unit">años</span>`;
+                        document.getElementById('val-semanas').innerHTML = `${paciente.semanas_gestacion || '--'} <span class="metric-unit">semanas</span>`;
+                        document.getElementById('val-peso').innerHTML = `${paciente.peso || '--'} <span class="metric-unit">kg</span>`;
+                        
+                        // 3. Pintamos los SIGNOS VITALES (que vienen anidados en el JSON)
+                        if (paciente.signos_vitales) {
+                            document.getElementById('val-temperatura').innerHTML = `${paciente.signos_vitales.temperatura || '--'} <span class="metric-unit">°C</span>`;
+                            document.getElementById('val-sistolica').innerHTML = `${paciente.signos_vitales.presion_sistolica || '--'} <span class="metric-unit">mmHg</span>`;
+                            document.getElementById('val-diastolica').innerHTML = `${paciente.signos_vitales.presion_diastolica || '--'} <span class="metric-unit">mmHg</span>`;
+                            document.getElementById('val-glucosa').innerHTML = `${paciente.signos_vitales.glucosa || '--'} <span class="metric-unit">mg/dL</span>`;
+                            document.getElementById('val-frecuencia').innerHTML = `${paciente.signos_vitales.ritmo_cardiaco || '--'} <span class="metric-unit">BPM</span>`;
+                        }
+                        
+                        sessionStorage.setItem('datos_paciente_actual', JSON.stringify(paciente));
+                    } else {
+                        if(expedienteTxt) expedienteTxt.innerText = `Error: Paciente no encontrado`;
+                    }
+                } catch (error) {
+                    console.error("Error cargando paciente:", error);
+                    if(expedienteTxt) expedienteTxt.innerText = `Error de conexión con el servidor.`;
+                }
+            }
+            
+            cargarDatosPaciente();
+            
+        } else {
+            // Si entra directo sin seleccionar paciente, lo devolvemos a la lista
+           window.location.href = 'patients.html';
+        }
     }
 
     // ==========================================
