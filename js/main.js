@@ -701,6 +701,8 @@ document.addEventListener("DOMContentLoaded", () => {
                         const modalElement = document.getElementById('modalDiagnostico');
                         const modalBootstrap = new bootstrap.Modal(modalElement);
                         modalBootstrap.show();
+                        // Habilitamos el botón de correo porque ya hay un diagnóstico
+                        document.getElementById('btn-enviar-correo').disabled = false;
                         
                     } else {
                         alert(`Error del Oráculo: ${dictamen.error}`);
@@ -713,6 +715,49 @@ document.addEventListener("DOMContentLoaded", () => {
                     // 7. Restauramos el botón a su estado normal
                     btnDiagnostico.innerHTML = textoOriginalBtn;
                     btnDiagnostico.disabled = false;
+                }
+            });
+        }
+
+        // ==========================================
+        // ACCIÓN DEL BOTÓN ENVIAR CORREO (FACADE + AUTOMATIZADOR)
+        // ==========================================
+        const btnEnviarCorreo = document.getElementById('btn-enviar-correo');
+        
+        if (btnEnviarCorreo) {
+            btnEnviarCorreo.addEventListener('click', async () => {
+                const pacienteActualRaw = sessionStorage.getItem('datos_paciente_actual');
+                if (!pacienteActualRaw) return;
+                
+                const paciente = JSON.parse(pacienteActualRaw);
+                const correoMedico = sessionStorage.getItem('email_medico');
+                
+                // Efecto visual de envío
+                const textoOriginal = btnEnviarCorreo.innerHTML;
+                btnEnviarCorreo.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Enviando...';
+                btnEnviarCorreo.disabled = true;
+                
+                try {
+                    // Enviamos la orden al Facade de Python (No esperamos la respuesta larga porque es en segundo plano)
+                    fetch('http://127.0.0.1:5000/api/enviar_reporte', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            id_paciente: paciente.id_paciente,
+                            correo_destino: correoMedico
+                        })
+                    });
+                    
+                    // Como Python usa un Automatizador en segundo plano, liberamos la pantalla de inmediato
+                    setTimeout(() => {
+                        btnEnviarCorreo.innerHTML = '<i class="ri-check-line fs-5 text-success"></i> ¡Enviado!';
+                        btnEnviarCorreo.classList.replace('btn-outline-secondary', 'btn-outline-success');
+                    }, 1500); // Simulamos un tiempo rápido de respuesta al usuario
+                    
+                } catch (error) {
+                    console.error("Error al despachar el correo:", error);
+                    btnEnviarCorreo.innerHTML = textoOriginal;
+                    btnEnviarCorreo.disabled = false;
                 }
             });
         }
