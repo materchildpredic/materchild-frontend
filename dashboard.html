@@ -120,10 +120,10 @@
                         <p class="text-muted fs-5 m-0" id="expediente-paciente">Expediente Clínico Sintético: Cargando...</p>
                     </div>
                     <div class="d-flex gap-2">
-                        <button class="btn btn-outline-secondary px-4 py-3 fw-semibold shadow-sm d-flex align-items-center gap-2" style="border-radius: 12px; font-size: 1.1rem;">
+                        <button id="btn-enviar-correo" disabled class="btn btn-outline-secondary px-4 py-3 fw-semibold shadow-sm d-flex align-items-center gap-2" style="border-radius: 12px; font-size: 1.1rem; transition: all 0.3s;">
                             <i class="ri-mail-send-line fs-5"></i> Enviar al Correo
                         </button>
-                        <button class="btn btn-primary px-4 py-3 fw-semibold shadow-sm d-flex align-items-center gap-2" style="background-color: var(--primary); border: none; border-radius: 12px; font-size: 1.1rem;">
+                        <button id="btn-diagnostico" class="btn btn-primary px-4 py-3 fw-semibold shadow-sm d-flex align-items-center gap-2" style="background-color: var(--primary); border: none; border-radius: 12px; font-size: 1.1rem;">
                             <i class="ri-survey-line fs-5"></i> Diagnóstico
                         </button>
                     </div>
@@ -133,27 +133,27 @@
                     
                     <div class="col-lg-4 d-flex">
                         <div class="card border-0 shadow-sm rounded-4 w-100 position-relative overflow-hidden p-4">
-                            <div class="risk-bg-accent"></div>
+                            <div class="risk-bg-accent" id="dash-bg-riesgo" style="background: linear-gradient(135deg, var(--surface-variant) 0%, rgba(255,255,255,0) 100%);"></div>
                             
-                            <div class="metric-title" style="color: var(--error);">
+                            <div class="metric-title text-secondary">
                                 <i class="ri-alert-fill fs-5"></i> NIVEL DE RIESGO
                             </div>
                             
-                            <div class="fw-bold my-3" style="font-size: 4rem; color: var(--error); line-height: 1; font-family: var(--font-display); position: relative; z-index: 1;">
-                                Alto
+                            <div class="fw-bold my-3 text-secondary" id="dash-nivel-riesgo" style="font-size: 3.5rem; line-height: 1; font-family: var(--font-display); position: relative; z-index: 1;">
+                                --
                             </div>
                             
-                            <p class="text-muted small mb-4 position-relative" style="line-height: 1.6; z-index: 1;">
-                                Prioridad de intervención inmediata basada en patrones de presión y glucemia detectados.
+                            <p class="text-muted small mb-4 position-relative" id="dash-riesgo-desc" style="line-height: 1.6; z-index: 1;">
+                                Sin evaluar. Presione el botón de "Diagnóstico" para analizar con Inteligencia Artificial.
                             </p>
 
                             <div class="mt-auto position-relative" style="z-index: 1;">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span class="fw-medium text-dark" style="font-size: 0.8rem;">Confianza de motor de reglas</span>
-                                    <span class="fw-bold" style="color: var(--tertiary); font-size: 0.8rem;">94%</span>
+                                    <span class="fw-medium text-dark" style="font-size: 0.8rem;">Confianza de motor IA</span>
+                                    <span class="fw-bold text-secondary" id="dash-confianza-texto" style="font-size: 0.8rem;">--%</span>
                                 </div>
                                 <div class="progress" style="height: 6px; background-color: var(--surface-variant);">
-                                    <div class="progress-bar" role="progressbar" style="width: 94%; background-color: var(--tertiary);"></div>
+                                    <div class="progress-bar bg-secondary" id="dash-confianza-barra" role="progressbar" style="width: 0%;"></div>
                                 </div>
                             </div>
                         </div>
@@ -192,7 +192,7 @@
                 <div class="card border-0 shadow-sm rounded-4 mb-4 p-4">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <div class="metric-title"><i class="ri-pulse-line fs-5"></i> PRESIÓN ARTERIAL</div>
-                        <span class="badge rounded-pill px-3 py-2" style="background-color: var(--error-container); color: var(--error); font-size: 0.65rem; letter-spacing: 0.5px;">FUERA DE RANGO</span>
+                        <span id="badge-presion" class="badge rounded-pill px-3 py-2 d-none" style="background-color: var(--error-container); color: var(--error); font-size: 0.65rem; letter-spacing: 0.5px;">FUERA DE RANGO</span>
                     </div>
                     
                     <div class="row text-center text-md-start">
@@ -217,8 +217,8 @@
                             <div class="metric-value mb-4" id="val-glucosa">-- <span class="metric-unit">mg/dL</span></div>
                             
                             <div class="insight-note">
-                                <p class="m-0" style="font-size: 0.85rem; color: var(--tertiary); line-height: 1.5;">
-                                    <strong>Nota del Motor de riesgo:</strong> Los niveles de glucemia muestran una tendencia ascendente en las últimas 24h.
+                                <p class="m-0" style="font-size: 0.85rem; line-height: 1.5;" id="nota-glucosa">
+                                    <span class="text-muted">Analizando niveles...</span>
                                 </p>
                             </div>
                         </div>
@@ -242,11 +242,7 @@
                         </div>
                     </div>
                 </div>
-
-                <div class="d-flex flex-wrap gap-3 mt-5 mb-5">
-                    
-                </div>
-
+            </br>
                 <div class="d-flex flex-column flex-sm-row gap-3 p-4 rounded-4" style="background-color: var(--surface-container-highest);">
                     <div class="rounded-4 d-flex align-items-center justify-content-center shadow-sm flex-shrink-0" style="width: 48px; height: 48px; background-color: var(--surface-container-lowest);">
                         <i class="ri-shield-keyhole-line fs-4" style="color: var(--tertiary);"></i>
@@ -259,6 +255,67 @@
 
             </div>
         </main>
+    </div>
+    <div class="modal fade" id="modalDiagnostico" tabindex="-1" aria-labelledby="modalDiagnosticoLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow rounded-4" style="background-color: var(--surface);">
+                
+                <div class="modal-header border-0 bg-light rounded-top-4 p-4">
+                    <h5 class="modal-title fw-bold d-flex align-items-center gap-2" id="modalDiagnosticoLabel" style="color: var(--primary);">
+                        <i class="ri-robot-2-line fs-4"></i> Predicción de Diagnóstico por Materchild
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                
+                <div class="modal-body p-4">
+                    <div class="row g-4">
+                        
+                        <div class="col-md-5">
+                            <div class="p-4 rounded-4 mb-3 text-center transition-all" id="diag-riesgo-contenedor">
+                                <span class="text-uppercase small fw-bold tracking-wider" style="font-size: 0.7rem; opacity: 0.8;">Nivel de Riesgo Determinado</span>
+                                <div class="fw-bold my-2" id="diag-nivel-riesgo" style="font-size: 2.5rem; font-family: var(--font-display); line-height: 1;">--</div>
+                            </div>
+                            
+                            <div class="card border p-3 rounded-4 bg-light">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="text-muted small fw-medium">Confianza de Predicción</span>
+                                    <span class="fw-bold text-dark" id="diag-confianza">--%</span>
+                                </div>
+                                <div class="progress" style="height: 8px; background-color: var(--surface-variant);">
+                                    <div class="progress-bar" id="diag-confianza-bar" role="progressbar" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-7">
+                            <h4 class="fw-bold mb-1 text-dark" style="font-size: 1.4rem;" id="diag-enfermedad">Analizando...</h4>
+                            <p class="text-muted small mb-4">Análisis predictivo transversal</p>
+                            
+                            <div class="mb-3">
+                                <span class="text-muted small fw-bold text-uppercase d-block mb-1"><i class="ri-file-list-3-line"></i> Justificación de Criterio:</span>
+                                <p class="m-0 text-dark small" style="line-height: 1.6; text-align: justify;" id="diag-justificacion">--</p>
+                            </div>
+                            
+                            <div class="mb-3 p-3 rounded-3" style="background-color: #fff8e1; border-left: 4px solid #ffb300;">
+                                <span class="small fw-bold text-uppercase d-block mb-1" style="color: #b78103;"><i class="ri-drop-line"></i> Alerta de Glucemia:</span>
+                                <p class="m-0 text-dark small" style="line-height: 1.5;" id="diag-alerta-glucosa">--</p>
+                            </div>
+
+                            <div class="p-3 rounded-3" style="background-color: #e8f5e9; border-left: 4px solid #2e7d32;">
+                                <span class="small fw-bold text-uppercase d-block mb-1" style="color: #1b5e20;"><i class="ri-heart-add-line"></i> Recomendación Médica Sugerida:</span>
+                                <p class="m-0 text-dark small" style="line-height: 1.5;" id="diag-recomendacion">--</p>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+                
+                <div class="modal-footer border-0 p-4 pt-0">
+                    <button type="button" class="btn btn-secondary px-4 py-2 fw-semibold shadow-sm" style="border-radius: 10px;" data-bs-dismiss="modal">Aceptar</button>
+                </div>
+                
+            </div>
+        </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/main.js"></script>

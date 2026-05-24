@@ -10,8 +10,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const adminUploadForm = document.getElementById('admin-upload-form');
     const btnProcesar = document.getElementById('btn-procesar-lote');
     const tablaPacientes = document.getElementById('tabla-pacientes');
-    const cuerpoModal = document.getElementById('cuerpo-modal-diagnostico');
     const btnResend = document.getElementById('btn-resend');
+    const btnDiagnostico = document.getElementById('btn-diagnostico');
 
     
     // ==========================================
@@ -530,20 +530,58 @@ document.addEventListener("DOMContentLoaded", () => {
                         const paciente = await response.json();
                         // 1. Pintamos la CÉDULA en el título superior
                         if(expedienteTxt) {
-                            expedienteTxt.innerText = `Expediente Clínico Sintético: #${paciente.cedula}`;
+                            expedienteTxt.innerText = `Expediente Clínico Sintético: # ${paciente.cedula}`;
                         }
                         
-                        // 2. Pintamos los DATOS GENERALES
+                        // 2. Pintamos los DATOS GENERALES (Con precisión decimal para el peso)
                         document.getElementById('val-edad').innerHTML = `${paciente.edad} <span class="metric-unit">años</span>`;
                         document.getElementById('val-semanas').innerHTML = `${paciente.semanas_gestacion || '--'} <span class="metric-unit">semanas</span>`;
-                        document.getElementById('val-peso').innerHTML = `${paciente.peso || '--'} <span class="metric-unit">kg</span>`;
                         
-                        // 3. Pintamos los SIGNOS VITALES (que vienen anidados en el JSON)
+                        // Forzamos a que el peso siempre tenga 1 decimal médico (ej. 74.0)
+                        const pesoFormateado = paciente.peso ? parseFloat(paciente.peso).toFixed(1) : '--';
+                        document.getElementById('val-peso').innerHTML = `${pesoFormateado} <span class="metric-unit">kg</span>`;
+
+                        // 3. Pintamos los SIGNOS VITALES y evaluamos Alertas Visuales
                         if (paciente.signos_vitales) {
-                            document.getElementById('val-temperatura').innerHTML = `${paciente.signos_vitales.temperatura || '--'} <span class="metric-unit">°C</span>`;
-                            document.getElementById('val-sistolica').innerHTML = `${paciente.signos_vitales.presion_sistolica || '--'} <span class="metric-unit">mmHg</span>`;
-                            document.getElementById('val-diastolica').innerHTML = `${paciente.signos_vitales.presion_diastolica || '--'} <span class="metric-unit">mmHg</span>`;
-                            document.getElementById('val-glucosa').innerHTML = `${paciente.signos_vitales.glucosa || '--'} <span class="metric-unit">mg/dL</span>`;
+                            
+                            // Temperatura con 1 decimal
+                            const tempFormateada = paciente.signos_vitales.temperatura ? parseFloat(paciente.signos_vitales.temperatura).toFixed(1) : '--';
+                            document.getElementById('val-temperatura').innerHTML = `${tempFormateada} <span class="metric-unit">°C</span>`;
+                            
+                            // Extracción de presión para evaluar
+                            const sistolica = paciente.signos_vitales.presion_sistolica;
+                            const diastolica = paciente.signos_vitales.presion_diastolica;
+                            
+                            document.getElementById('val-sistolica').innerHTML = `${sistolica || '--'} <span class="metric-unit">mmHg</span>`;
+                            document.getElementById('val-diastolica').innerHTML = `${diastolica || '--'} <span class="metric-unit">mmHg</span>`;
+                            
+                            // ALERTA DINÁMICA: Presión Arterial
+                            // Riesgo obstétrico suele ser > 130/85 o Hipotensión < 90/60
+                            const badgePresion = document.getElementById('badge-presion');
+                            if (badgePresion && sistolica && diastolica) {
+                                if (sistolica >= 130 || diastolica >= 85 || sistolica <= 90 || diastolica <= 60) {
+                                    badgePresion.classList.remove('d-none'); // Muestra la alerta roja
+                                } else {
+                                    badgePresion.classList.add('d-none'); // Oculta si la presión es normal
+                                }
+                            }
+
+                            // Extracción de glucosa para evaluar
+                            const glucosa = paciente.signos_vitales.glucosa;
+                            document.getElementById('val-glucosa').innerHTML = `${glucosa || '--'} <span class="metric-unit">mg/dL</span>`;
+                            
+                            // ALERTA DINÁMICA: Glucemia
+                            const notaGlucosa = document.getElementById('nota-glucosa');
+                            if (notaGlucosa && glucosa) {
+                                if (glucosa >= 140) {
+                                    notaGlucosa.innerHTML = `<strong style="color: var(--error);"><i class="ri-error-warning-line"></i> Alerta:</strong> Niveles compatibles con posible hiperglucemia / diabetes gestacional.`;
+                                } else if (glucosa < 70) {
+                                    notaGlucosa.innerHTML = `<strong style="color: var(--error);"><i class="ri-error-warning-line"></i> Alerta:</strong> Cuadro de hipoglucemia detectado. Riesgo materno.`;
+                                } else {
+                                    notaGlucosa.innerHTML = `<strong style="color: var(--tertiary);"><i class="ri-check-line"></i> Nota Clínica:</strong> Niveles de glucemia estables y dentro de los parámetros seguros.`;
+                                }
+                            }
+
                             document.getElementById('val-frecuencia').innerHTML = `${paciente.signos_vitales.ritmo_cardiaco || '--'} <span class="metric-unit">BPM</span>`;
                         }
                         
@@ -562,6 +600,166 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
             // Si entra directo sin seleccionar paciente, lo devolvemos a la lista
            window.location.href = 'patients.html';
+        }
+        // ==========================================
+        // ACCIÓN DEL BOTÓN DIAGNÓSTICO (PROCESAR CON IA)
+        // ==========================================
+        
+        if (btnDiagnostico) {
+            btnDiagnostico.addEventListener('click', async () => {
+                // 1. Recuperamos los datos del paciente actual que guardamos en la sesión
+                const pacienteActualRaw = sessionStorage.getItem('datos_paciente_actual');
+                
+                if (!pacienteActualRaw) {
+                    alert("Error: No se encontraron los signos vitales del paciente en sesión.");
+                    return;
+                }
+                
+                const paciente = JSON.parse(pacienteActualRaw);
+                
+                // 2. Cambiamos el estado del botón a "Cargando..."
+                const textoOriginalBtn = btnDiagnostico.innerHTML;
+                btnDiagnostico.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Consultando...';
+                btnDiagnostico.disabled = true;
+                
+                try {
+                    // 3. Hacemos la llamada al Backend pasando el id y los signos vitales
+                    const response = await fetch('http://127.0.0.1:5000/api/predecir', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            id_paciente: paciente.id_paciente,
+                            signos_vitales: paciente.signos_vitales
+                        })
+                    });
+                    
+                    const dictamen = await response.json();
+                    
+                    if (response.ok) {
+                        // 4. Inyectamos las respuestas de la IA dentro de las cajitas del Popup
+                        document.getElementById('diag-enfermedad').innerText = dictamen.enfermedad_predicha;
+                        document.getElementById('diag-nivel-riesgo').innerText = dictamen.nivel_riesgo;
+                        document.getElementById('diag-justificacion').innerText = dictamen.justificacion;
+                        document.getElementById('diag-alerta-glucosa').innerText = dictamen.alerta_glucosa;
+                        document.getElementById('diag-recomendacion').innerText = dictamen.recomendacion_medica;
+                        
+                        // Barra de confianza
+                        document.getElementById('diag-confianza').innerText = `${dictamen.confianza_ia}%`;
+                        document.getElementById('diag-confianza-bar').style.width = `${dictamen.confianza_ia}%`;
+                        
+                        // 5. Cambiamos el color del Popup según el nivel de riesgo
+                        const contenedorRiesgo = document.getElementById('diag-riesgo-contenedor');
+                        const riesgo = dictamen.nivel_riesgo.toLowerCase();
+                        
+                        // Capturamos los elementos del Dashboard
+                        const dashNivelRiesgo = document.getElementById('dash-nivel-riesgo');
+                        const dashRiesgoDesc = document.getElementById('dash-riesgo-desc');
+                        const dashConfTexto = document.getElementById('dash-confianza-texto');
+                        const dashConfBarra = document.getElementById('dash-confianza-barra');
+                        const dashBgRiesgo = document.getElementById('dash-bg-riesgo');
+
+                        // Le quitamos la clase gris dominante de Bootstrap 🚨
+                        if (dashNivelRiesgo) {
+                            dashNivelRiesgo.classList.remove('text-secondary');
+                        }
+                        // Sincronizamos los textos del Dashboard
+                        if (dashNivelRiesgo) dashNivelRiesgo.innerText = dictamen.nivel_riesgo;
+                        if (dashRiesgoDesc) dashRiesgoDesc.innerText = `Evaluación completada. Riesgo asociado a sospecha de ${dictamen.enfermedad_predicha}.`;
+                        if (dashConfTexto) dashConfTexto.innerText = `${dictamen.confianza_ia}%`;
+                        if (dashConfBarra) dashConfBarra.style.width = `${dictamen.confianza_ia}%`;
+
+                        // Aplicamos colores a AMBOS lugares (Popup y Dashboard)
+                        if (riesgo.includes('alto')) {
+                            // Popup
+                            contenedorRiesgo.style.backgroundColor = '#fdadad';
+                            contenedorRiesgo.style.color = '#8c0000';
+                            // Dashboard
+                            if (dashNivelRiesgo) dashNivelRiesgo.style.color = 'var(--error)';
+                            if (dashConfBarra) dashConfBarra.className = 'progress-bar bg-danger';
+                            if (dashBgRiesgo) dashBgRiesgo.style.background = 'linear-gradient(135deg, var(--error-container) 0%, rgba(255,218,214,0) 100%)';
+                        
+                        } else if (riesgo.includes('medio') || riesgo.includes('moderado')) {
+                            // Popup
+                            contenedorRiesgo.style.backgroundColor = '#ffe5a3';
+                            contenedorRiesgo.style.color = '#7a5300';
+                            // Dashboard
+                            if (dashNivelRiesgo) dashNivelRiesgo.style.color = '#b78103';
+                            if (dashConfBarra) dashConfBarra.className = 'progress-bar bg-warning';
+                            if (dashBgRiesgo) dashBgRiesgo.style.background = 'linear-gradient(135deg, #ffe5a3 0%, rgba(255,229,163,0) 100%)';
+                        
+                        } else { // Riesgo Bajo
+                            // Popup
+                            contenedorRiesgo.style.backgroundColor = '#cbf2d6';
+                            contenedorRiesgo.style.color = '#00661a';
+                            // Dashboard
+                            if (dashNivelRiesgo) dashNivelRiesgo.style.color = '#1b5e20';
+                            if (dashConfBarra) dashConfBarra.className = 'progress-bar bg-success';
+                            if (dashBgRiesgo) dashBgRiesgo.style.background = 'linear-gradient(135deg, #cbf2d6 0%, rgba(203,242,214,0) 100%)';
+                        }
+                        
+                        // 6. Abrimos el Popup en pantalla de forma nativa con Bootstrap
+                        const modalElement = document.getElementById('modalDiagnostico');
+                        const modalBootstrap = new bootstrap.Modal(modalElement);
+                        modalBootstrap.show();
+                        // Habilitamos el botón de correo porque ya hay un diagnóstico
+                        document.getElementById('btn-enviar-correo').disabled = false;
+                        
+                    } else {
+                        alert(`Error del Oráculo: ${dictamen.error}`);
+                    }
+                    
+                } catch (error) {
+                    console.error("Error en predicción:", error);
+                    alert("No se pudo conectar con el motor de Inteligencia Artificial.");
+                } finally {
+                    // 7. Restauramos el botón a su estado normal
+                    btnDiagnostico.innerHTML = textoOriginalBtn;
+                    btnDiagnostico.disabled = false;
+                }
+            });
+        }
+
+        // ==========================================
+        // ACCIÓN DEL BOTÓN ENVIAR CORREO (FACADE + AUTOMATIZADOR)
+        // ==========================================
+        const btnEnviarCorreo = document.getElementById('btn-enviar-correo');
+        
+        if (btnEnviarCorreo) {
+            btnEnviarCorreo.addEventListener('click', async () => {
+                const pacienteActualRaw = sessionStorage.getItem('datos_paciente_actual');
+                if (!pacienteActualRaw) return;
+                
+                const paciente = JSON.parse(pacienteActualRaw);
+                const correoMedico = sessionStorage.getItem('email_medico');
+                
+                // Efecto visual de envío
+                const textoOriginal = btnEnviarCorreo.innerHTML;
+                btnEnviarCorreo.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Enviando...';
+                btnEnviarCorreo.disabled = true;
+                
+                try {
+                    // Enviamos la orden al Facade de Python (No esperamos la respuesta larga porque es en segundo plano)
+                    fetch('http://127.0.0.1:5000/api/enviar_reporte', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            id_paciente: paciente.id_paciente,
+                            correo_destino: correoMedico
+                        })
+                    });
+                    
+                    // Como Python usa un Automatizador en segundo plano, liberamos la pantalla de inmediato
+                    setTimeout(() => {
+                        btnEnviarCorreo.innerHTML = '<i class="ri-check-line fs-5 text-success"></i> ¡Enviado!';
+                        btnEnviarCorreo.classList.replace('btn-outline-secondary', 'btn-outline-success');
+                    }, 1500); // Simulamos un tiempo rápido de respuesta al usuario
+                    
+                } catch (error) {
+                    console.error("Error al despachar el correo:", error);
+                    btnEnviarCorreo.innerHTML = textoOriginal;
+                    btnEnviarCorreo.disabled = false;
+                }
+            });
         }
     }
 
