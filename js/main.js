@@ -1,8 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // Definimos la URL de nuestro Backend Python
-    const API_URL = 'https://materchild-backend.onrender.com/api/auth';
+    // Cambia esta URL cuando pases a producción (ej. 'https://tu-backend.onrender.com/api')
+    const API_BASE_URL = 'http://127.0.0.1:5000/api';
 
-    // Capturamos los formularios
     const loginForm = document.getElementById('login-form');
     const registerForm = document.getElementById('register-form');
     const verifyForm = document.getElementById('verify-form');
@@ -31,7 +30,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             try {
                 // Enviamos la petición POST al Backend
-                const response = await fetch(`${API_URL}/solicitar-otp`, {
+                const response = await fetch(`${API_BASE_URL}/auth/solicitar-otp`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ correo: email })
@@ -77,7 +76,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             try {
                 // PASO A: Llamamos a la ruta que guarda al médico en la base de datos
-                const responseRegistro = await fetch('https://materchild-backend.onrender.com/api/auth/register', {
+                const responseRegistro = await fetch(`${API_BASE_URL}/auth/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ nombres, apellidos, correo_institucional, especialidad })
@@ -96,7 +95,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 // PASO B: Si se guardó en la base de datos, solicitamos el código a su correo
                 btnRegister.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Enviando código al correo...';
                 
-                const responseOtp = await fetch('https://materchild-backend.onrender.com/api/auth/solicitar-otp', {
+                const responseOtp = await fetch(`${API_BASE_URL}/auth/solicitar-otp`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ correo: correo_institucional }) // Solo necesita el correo
@@ -159,7 +158,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             try {
                 // Enviar a Python
-                const response = await fetch(`${API_URL}/verificar-otp`, {
+                const response = await fetch(`${API_BASE_URL}/auth/verificar-otp`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
@@ -210,7 +209,7 @@ document.addEventListener("DOMContentLoaded", () => {
             btnAdmin.disabled = true;
 
             try {
-                const response = await fetch('https://materchild-backend.onrender.com/api/auth/admin-login', {
+                const response = await fetch(`${API_BASE_URL}/auth/admin-login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ usuario, contrasena })
@@ -262,7 +261,7 @@ document.addEventListener("DOMContentLoaded", () => {
             statusDiv.classList.add('d-none');
 
             try {
-                const response = await fetch('https://materchild-backend.onrender.com/api/data/upload-dataset', {
+                const response = await fetch(`${API_BASE_URL}/data/upload-dataset`, {
                     method: 'POST',
                     body: formData // No lleva headers de Content-Type, el navegador lo calcula con FormData
                 });
@@ -313,7 +312,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 while (restantes > 0) {
                     statusDiv.innerHTML = `<span class="text-primary">Llamando al Motor de reglas... Estructurando un lote de ${tamanoLote} pacientes. Por favor espera...</span>`;
                         
-                    const response = await fetch('https://materchild-backend.onrender.com/api/data/procesar-lote', {
+                    const response = await fetch(`${API_BASE_URL}/data/procesar-lote`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ lote: tamanoLote })
@@ -389,10 +388,10 @@ document.addEventListener("DOMContentLoaded", () => {
         // 3. Cargar las pacientes (AHORA RECIBE EL TEXTO A BUSCAR)
         async function cargarPacientes(textoBusqueda = '') {
             try {
-                // Si hay texto, armamos la URL con el parámetro 'q'
+                // Si hay texto, armamos la URL con el parámetro 'q' apuntando a API_BASE_URL
                 const url = textoBusqueda 
-                    ? `https://materchild-backend.onrender.com/api/pacientes?q=${encodeURIComponent(textoBusqueda)}` 
-                    : 'https://materchild-backend.onrender.com/api/pacientes';
+                    ? `${API_BASE_URL}/pacientes?q=${encodeURIComponent(textoBusqueda)}` 
+                    : `${API_BASE_URL}/pacientes`;
 
                 const response = await fetch(url);
                 const pacientes = await response.json();
@@ -524,7 +523,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             async function cargarDatosPaciente() {
                 try {
-                    const response = await fetch(`https://materchild-backend.onrender.com/api/pacientes/${idPaciente}`);
+                    const response = await fetch(`${API_BASE_URL}/pacientes/${idPaciente}`);
                     
                     if (response.ok) {
                         const paciente = await response.json();
@@ -624,7 +623,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 
                 try {
                     // 3. Hacemos la llamada al Backend pasando el id y los signos vitales
-                    const response = await fetch('https://materchild-backend.onrender.com/api/predecir', {
+                    const response = await fetch(`${API_BASE_URL}/predecir`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -739,7 +738,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 
                 try {
                     // Enviamos la orden al Facade de Python (No esperamos la respuesta larga porque es en segundo plano)
-                    fetch('https://materchild-backend.onrender.com/api/enviar_reporte', {
+                    fetch(`${API_BASE_URL}/enviar_reporte`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -786,7 +785,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             try {
                 // Volvemos a llamar a la ruta que genera y envía el OTP
-                const response = await fetch('https://materchild-backend.onrender.com/api/auth/solicitar-otp', {
+                const response = await fetch(`${API_BASE_URL}/auth/solicitar-otp`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ correo: correo })
