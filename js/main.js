@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
     // Cambia esta URL cuando pases a producción (ej. 'https://tu-backend.onrender.com/api')
-    const API_BASE_URL = 'http://127.0.0.1:5000/api';
+    const API_BASE_URL = 'https://materchild-backend.onrender.com/api';
 
     const loginForm = document.getElementById('login-form');
     const registerForm = document.getElementById('register-form');
